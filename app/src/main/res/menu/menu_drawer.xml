@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:showIn="navigation_view">
+
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/fragmentInicio2"
+            android:icon="@drawable/home_circle"
+            android:title="@string/inicio" />
+        <item
+            android:id="@+id/fragmentCuenta"
+            android:icon="@drawable/account_circle"
+            android:title="@string/mi_cuenta" />
+        <item
+            android:id="@+id/fragmentCita"
+            android:icon="@drawable/ic_cita"
+            android:title="@string/cita" />
+        <item
+            android:id="@+id/fragmentReservas"
+            android:icon="@drawable/ic_reservas"
+            android:title="@string/reservas" />
+        <item
+            android:id="@+id/fragmentProductos"
+            android:icon="@drawable/bottle_tonic"
+            android:title="@string/productos" />
+    </group>
+
+
+
+</menu>

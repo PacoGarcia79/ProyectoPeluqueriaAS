@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:id="@+id/opHacerFoto"
+        android:title="Hacer Foto"/>
+    <item android:id="@+id/opAbrirGaleria"
+        android:title="Abrir Galeria"/>
+    <item android:id="@+id/opBorrarFoto"
+        android:title="Borrar Foto"/>
+    <item android:id="@+id/opCancelar"
+        android:title="Cancelar"/>
+</menu>

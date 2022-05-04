@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/navigation"
+    app:startDestination="@id/fragmentInicio2">
+    <fragment
+        android:id="@+id/fragmentInicio2"
+        android:name="com.pacogarcia.proyectopeluqueria.FragmentInicio"
+        android:label="fragment_inicio"
+        tools:layout="@layout/fragment_inicio" >
+        <action
+            android:id="@+id/action_fragmentInicio2_to_dialogoLogin2"
+            app:destination="@id/dialogoLogin" />
+    </fragment>
+    <fragment
+        android:id="@+id/fragmentCita"
+        android:name="com.pacogarcia.proyectopeluqueria.FragmentCita"
+        android:label="fragment_cita"
+        tools:layout="@layout/fragment_cita" />
+    <fragment
+        android:id="@+id/fragmentCuenta"
+        android:name="com.pacogarcia.proyectopeluqueria.FragmentCuenta"
+        android:label="fragment_cuenta"
+        tools:layout="@layout/fragment_cuenta" />
+    <fragment
+        android:id="@+id/fragmentProductos"
+        android:name="com.pacogarcia.proyectopeluqueria.FragmentProductos"
+        android:label="fragment_productos"
+        tools:layout="@layout/fragment_productos" >
+        <action
+            android:id="@+id/action_fragmentProductos_to_fragmentTipoProducto"
+            app:destination="@id/fragmentTipoProducto" />
+    </fragment>
+    <dialog
+        android:id="@+id/dialogoLogin"
+        android:name="com.pacogarcia.proyectopeluqueria.dialogos.DialogoLogin"
+        android:label="DialogoLogin" >
+        <action
+            android:id="@+id/action_dialogoLogin_to_fragmentInicio2"
+            app:destination="@id/fragmentInicio2" />
+        <action
+            android:id="@+id/action_dialogoLogin_to_fragmentRegistrar"
+            app:destination="@id/fragmentRegistrar" />
+    </dialog>
+    <action android:id="@+id/action_global_fragmentInicio2" app:destination="@id/fragmentInicio2"/>
+    <fragment
+        android:id="@+id/fragmentReservas"
+        android:name="com.pacogarcia.proyectopeluqueria.FragmentReservas"
+        android:label="fragment_reservas"
+        tools:layout="@layout/fragment_reservas" />
+    <fragment
+        android:id="@+id/fragmentTipoProducto"
+        android:name="com.pacogarcia.proyectopeluqueria.FragmentTipoProducto"
+        android:label="FragmentTipoProducto" />
+    <action android:id="@+id/action_global_fragmentProductos4" app:destination="@id/fragmentProductos" />
+    <action android:id="@+id/action_global_fragmentCita" app:destination="@id/fragmentCita" />
+    <action android:id="@+id/action_global_fragmentReservas" app:destination="@id/fragmentReservas" />
+    <action android:id="@+id/action_global_fragmentCuenta" app:destination="@id/fragmentCuenta" />
+    <fragment
+        android:id="@+id/fragmentHorarios"
+        android:name="com.pacogarcia.proyectopeluqueria.FragmentHorarios"
+        android:label="fragment_horarios"
+        tools:layout="@layout/fragment_horarios" /><action android:id="@+id/action_global_fragmentHorarios2" app:destination="@id/fragmentHorarios"/>
+    <dialog
+        android:id="@+id/dialogoAddProductoCita"
+        android:name="com.pacogarcia.proyectopeluqueria.dialogos.DialogoAddProductoCita"
+        android:label="DialogoAddProductoCita" /><action android:id="@+id/action_global_dialogoAddProductoCita" app:destination="@id/dialogoAddProductoCita"/>
+    <dialog
+        android:id="@+id/dialogoConfirmacion"
+        android:name="com.pacogarcia.proyectopeluqueria.dialogos.DialogoConfirmacion"
+        android:label="DialogoConfirmacion" /><action android:id="@+id/action_global_dialogoConfirmacion" app:destination="@id/dialogoConfirmacion"/>
+    <fragment
+        android:id="@+id/fragmentListaProductos"
+        android:name="com.pacogarcia.proyectopeluqueria.FragmentListaProductos"
+        android:label="FragmentListaProductos" >
+        <action
+            android:id="@+id/action_fragmentListaProductos_to_fragmentTipoProducto"
+            app:destination="@id/fragmentTipoProducto" />
+    </fragment>
+    <action android:id="@+id/action_global_fragmentListaProductos" app:destination="@id/fragmentListaProductos" />
+    <fragment
+        android:id="@+id/fragmentRegistrar"
+        android:name="com.pacogarcia.proyectopeluqueria.FragmentRegistrar"
+        android:label="fragment_registrar"
+        tools:layout="@layout/fragment_registrar" >
+        <action
+            android:id="@+id/action_fragmentRegistrar_to_fragmentInicio2"
+            app:destination="@id/fragmentInicio2" />
+    </fragment>
+</navigation>
+
+<!--<?xml version="1.0" encoding="utf-8"?>-->
+<!--<navigation xmlns:android="http://schemas.android.com/apk/res/android"-->
+<!--    xmlns:app="http://schemas.android.com/apk/res-auto"-->
+<!--    xmlns:tools="http://schemas.android.com/tools"-->
+<!--    android:id="@+id/navigation"-->
+<!--    app:startDestination="@id/fragmentAcceso2">-->
+<!--    <fragment-->
+<!--        android:id="@+id/fragmentAcceso2"-->
+<!--        android:name="com.pacogarcia.proyectopeluqueria.FragmentAcceso"-->
+<!--        android:label="FragmentAcceso"-->
+<!--        tools:layout="@layout/fragment_acceso">-->
+<!--        <action-->
+<!--            android:id="@+id/action_fragmentAcceso2_to_fragmentCrearCuenta"-->
+<!--            app:destination="@id/fragmentCrearCuenta" />-->
+<!--        <action-->
+<!--            android:id="@+id/action_fragmentAcceso2_to_fragmentInicio2"-->
+<!--            app:destination="@id/fragmentInicio2" />-->
+<!--    </fragment>-->
+<!--    <fragment-->
+<!--        android:id="@+id/fragmentEntrar"-->
+<!--        android:name="com.pacogarcia.proyectopeluqueria.FragmentEntrar"-->
+<!--        android:label="fragment_entrar"-->
+<!--        tools:layout="@layout/fragment_entrar" />-->
+<!--    <fragment-->
+<!--        android:id="@+id/fragmentCrearCuenta"-->
+<!--        android:name="com.pacogarcia.proyectopeluqueria.FragmentCrearCuenta"-->
+<!--        android:label="FragmentCrearCuenta" />-->
+<!--    <fragment-->
+<!--        android:id="@+id/fragmentInicio2"-->
+<!--        android:name="com.pacogarcia.proyectopeluqueria.FragmentInicio"-->
+<!--        android:label="fragment_inicio"-->
+<!--        tools:layout="@layout/fragment_inicio" />-->
+<!--    <fragment-->
+<!--        android:id="@+id/fragmentCita"-->
+<!--        android:name="com.pacogarcia.proyectopeluqueria.FragmentCita"-->
+<!--        android:label="fragment_cita"-->
+<!--        tools:layout="@layout/fragment_cita" />-->
+<!--    <fragment-->
+<!--        android:id="@+id/fragmentCuenta"-->
+<!--        android:name="com.pacogarcia.proyectopeluqueria.FragmentCuenta"-->
+<!--        android:label="fragment_cuenta"-->
+<!--        tools:layout="@layout/fragment_cuenta" />-->
+<!--    <fragment-->
+<!--        android:id="@+id/fragmentProductos"-->
+<!--        android:name="com.pacogarcia.proyectopeluqueria.FragmentProductos"-->
+<!--        android:label="fragment_productos"-->
+<!--        tools:layout="@layout/fragment_productos" />-->
+<!--    <dialog-->
+<!--        android:id="@+id/dialogoLogin"-->
+<!--        android:name="com.pacogarcia.proyectopeluqueria.dialogos.DialogoLogin"-->
+<!--        android:label="DialogoLogin" />-->
+<!--</navigation>-->
+
+<!--    app:popUpTo="@+id/fragmentAcceso2"-->
+<!--    app:popUpToInclusive="true"/>-->
