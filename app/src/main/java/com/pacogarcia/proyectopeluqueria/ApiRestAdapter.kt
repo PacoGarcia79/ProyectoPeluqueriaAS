@@ -228,9 +228,9 @@ object ApiRestAdapter {
     }
 
     /**
-     * Este método se usa para añadir un usuario.
+     * Este método se usa para añadir un cliente.
      *
-     * @param usuario usuario a añadir.
+     * @param usuario cliente a añadir.
      * @return Un objeto de tipo MensajeGeneral para evaluar el resultado de la petición
      */
     fun addUsuario(usuario: Usuario): Deferred<MensajeGeneral> {

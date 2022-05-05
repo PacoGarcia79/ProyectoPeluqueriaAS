@@ -314,9 +314,9 @@ interface ProveedorServicios {
     suspend fun getClientes(@Header("Cookie") cookie: String): Response<ArrayList<Usuario>>
 
     /**
-     * Este método se usa para añadir un usuario.
+     * Este método se usa para registrar un cliente.
      *
-     * @param usuario usuario a añadir.
+     * @param usuario cliente a añadir.
      * @return Un objeto de tipo MensajeGeneral para evaluar el resultado de la petición
      */
     @POST("api/peluqueria/registro")
