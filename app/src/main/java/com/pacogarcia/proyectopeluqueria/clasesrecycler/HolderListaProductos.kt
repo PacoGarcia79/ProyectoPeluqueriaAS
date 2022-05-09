@@ -6,10 +6,12 @@ import android.os.Bundle
 import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
+import android.widget.Toast
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.floatingactionbutton.FloatingActionButton
+import com.google.android.material.snackbar.Snackbar
 import com.pacogarcia.proyectopeluqueria.MainActivity
 import com.pacogarcia.proyectopeluqueria.R
 import com.pacogarcia.proyectopeluqueria.clasesestaticas.ImagenUtilidad
@@ -20,21 +22,22 @@ import com.squareup.picasso.Picasso
 /**
  *  Clase holder para el recycler del listado de productos obtenidos en una búsqueda
  */
-class HolderListaProductos(v: View, contexto: Context) : RecyclerView.ViewHolder(v), View.OnClickListener {
+class HolderListaProductos(v: View, contexto: Context) : RecyclerView.ViewHolder(v),
+    View.OnClickListener {
 
     val nombreProducto: TextView
-    val precioProducto : TextView
-    val descripcionProducto : TextView
-    val imagenProducto : ImageView
+    val precioProducto: TextView
+    val descripcionProducto: TextView
+    val imagenProducto: ImageView
     val contexto: Context
     val v: View
-    val addCitaBtn : FloatingActionButton
+    val addCitaBtn: FloatingActionButton
     private lateinit var entity: Producto
     private var posicion = 0
 
     private var actividadPrincipal: MainActivity
 
-    fun bind(entity: Producto, position : Int) {
+    fun bind(entity: Producto, position: Int) {
         this.entity = entity
         this.posicion = position
 
@@ -58,7 +61,7 @@ class HolderListaProductos(v: View, contexto: Context) : RecyclerView.ViewHolder
 
     init {
         this.contexto = contexto
-        this.v=v
+        this.v = v
         addCitaBtn = v.findViewById(R.id.addCitaBtn)
         imagenProducto = v.findViewById(R.id.fotoProducto)
         nombreProducto = v.findViewById(R.id.nombreProducto)
@@ -70,21 +73,27 @@ class HolderListaProductos(v: View, contexto: Context) : RecyclerView.ViewHolder
     }
 
     override fun onClick(p0: View?) {
-        if(p0?.id == R.id.addCitaBtn){
-            val bundle = Bundle().apply {
-                putInt("posicionProducto", posicion)
-                putInt("cantidad", cantidadProductoAnyadirHolder)
-            }
+        if (p0?.id == R.id.addCitaBtn) {
 
-            MainActivity.clickAddProductoCitaHolder = true
-            actividadPrincipal.navController.navigate(
-                R.id.action_global_dialogoAddProductoCita,
-                bundle
-            )
+            if (entity.stock == 0) {
+                Snackbar.make(v, "No hay unidades en stock", Snackbar.LENGTH_LONG)
+                    .show();
+            } else {
+                val bundle = Bundle().apply {
+                    putInt("posicionProducto", posicion)
+                    putInt("cantidad", cantidadProductoAnyadirHolder)
+                }
+
+                MainActivity.clickAddProductoCitaHolder = true
+                actividadPrincipal.navController.navigate(
+                    R.id.action_global_dialogoAddProductoCita,
+                    bundle
+                )
+            }
         }
     }
 
-    companion object { //TODO: CONTROLAR QUE SI NO HAY STOCK NO SE PUEDE AÑADIR
+    companion object {
         const val cantidadProductoAnyadirHolder = 1
     }
 }

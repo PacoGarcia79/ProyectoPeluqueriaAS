@@ -128,10 +128,6 @@ class FragmentHorarios : Fragment(), View.OnClickListener {
             listaIdDisponibilidad.add(listaNoDisponibilidad.get(it.absoluteValue.toInt()).idDisponibilidad!!)
         }
 
-//        for (i in lista.indices) {
-//            listaIdDisponibilidad.add(listaNoDisponibilidad[i].idDisponibilidad!!)
-//        }
-
         for (i in listaIdDisponibilidad.indices) {
             if (i < listaIdDisponibilidad.size - 1)
                 sb.append(listaIdDisponibilidad[i].toString()).append(",")
