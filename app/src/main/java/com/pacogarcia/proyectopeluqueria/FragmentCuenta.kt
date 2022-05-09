@@ -263,14 +263,6 @@ class FragmentCuenta : Fragment(), View.OnClickListener {
                     R.id.opAbrirGaleria -> {
                         registerPermisosGaleria.launch(Manifest.permission.READ_EXTERNAL_STORAGE)
                     }
-                    R.id.opBorrarFoto -> {
-                        binding.fotoUsuario.setImageBitmap(
-                            BitmapFactory.decodeResource(
-                                resources,
-                                R.drawable.avatar
-                            )
-                        )
-                    }
                     R.id.opCancelar -> {
                         popup.dismiss()
                     }

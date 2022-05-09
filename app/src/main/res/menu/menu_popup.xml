@@ -4,8 +4,6 @@
         android:title="Hacer Foto"/>
     <item android:id="@+id/opAbrirGaleria"
         android:title="Abrir Galeria"/>
-    <item android:id="@+id/opBorrarFoto"
-        android:title="Borrar Foto"/>
     <item android:id="@+id/opCancelar"
         android:title="Cancelar"/>
 </menu>
