@@ -24,19 +24,9 @@ object ApiRestAdapter {
 
         val retrofit: Retrofit = Retrofit.Builder()
             .baseUrl(url)
-            .client(getHttpClient())
             .addConverterFactory(GsonConverterFactory.create())
             .build()
         return retrofit.create(ProveedorServicios::class.java)
-    }
-
-    fun getHttpClient(): OkHttpClient {
-        val logging = HttpLoggingInterceptor()
-        logging.level = HttpLoggingInterceptor.Level.BODY
-
-        val httpClient = OkHttpClient.Builder()
-        httpClient.addInterceptor(logging)
-        return httpClient.build()
     }
 
     /**
