@@ -168,6 +168,9 @@ class MainActivity : AppCompatActivity(),
         finishAndRemoveTask()
     }
 
+    /**
+     * Abre el diálogo de confirmación para las opciones de logout y salir
+     */
     private fun abreDialogoConfirmacion() {
 
         val bundle = Bundle().apply {
@@ -201,6 +204,9 @@ class MainActivity : AppCompatActivity(),
         }
     }
 
+    /**
+     * Cierra la sesión
+     */
     private fun logout() {
 
         CoroutineScope(Dispatchers.Main).launch {

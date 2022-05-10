@@ -12,6 +12,9 @@ import androidx.navigation.fragment.NavHostFragment
 import com.pacogarcia.proyectopeluqueria.databinding.FragmentInicioBinding
 import com.pacogarcia.proyectopeluqueria.viewmodel.ItemViewModel
 
+/**
+ * Fragmento de inicio
+ */
 class FragmentInicio : Fragment() {
 
     private lateinit var binding : FragmentInicioBinding
@@ -33,10 +36,13 @@ class FragmentInicio : Fragment() {
 //            }
 //        }
 
+
+        // Si el usuario no está autorizado, abre el diálogo de login
         if(!MainActivity.autorizado){
             abreDialogo()
         }
 
+        //TODO: foto al principio??
         if (context?.resources!!
                 .configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) {
 
@@ -49,6 +55,9 @@ class FragmentInicio : Fragment() {
     }
 
 
+    /**
+     * Abre el diálogo de login
+     */
     fun abreDialogo(){
         val navController = NavHostFragment.findNavController(this)
         if (navController.currentDestination?.id == R.id.fragmentInicio2) {

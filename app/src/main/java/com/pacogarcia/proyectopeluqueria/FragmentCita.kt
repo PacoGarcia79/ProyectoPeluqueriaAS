@@ -79,6 +79,9 @@ class FragmentCita : Fragment(), View.OnClickListener, AdapterView.OnItemSelecte
             binding.clientesSpinner.visibility = View.GONE
         }
 
+        /**
+         * Controla los cambios en el grupo de radiobuttons
+         */
         binding.radioGroup.setOnCheckedChangeListener { _, checkedId ->
             when (checkedId) {
                 binding.citaHora.id -> {
@@ -96,6 +99,9 @@ class FragmentCita : Fragment(), View.OnClickListener, AdapterView.OnItemSelecte
             }
         }
 
+        /**
+         * Controla los cambios en el grupo de chips con los horarios, para la opción de cita por hora
+         */
         binding.chipGroupHoraOpcionHora.setOnCheckedChangeListener { group, checkedId ->
             val chip: Chip? = group.findViewById(checkedId)
             chip?.let { chipView ->
@@ -107,6 +113,9 @@ class FragmentCita : Fragment(), View.OnClickListener, AdapterView.OnItemSelecte
             }
         }
 
+        /**
+         * Controla los cambios en el grupo de chips con los profesionales, para la opción de cita por hora
+         */
         binding.chipGroupProfesionalesOpcionHora.setOnCheckedChangeListener { group, checkedId ->
             val chip: Chip? = group.findViewById(checkedId)
             chip?.let { chipView ->
@@ -118,6 +127,9 @@ class FragmentCita : Fragment(), View.OnClickListener, AdapterView.OnItemSelecte
             }
         }
 
+        /**
+         * Controla los cambios en el grupo de chips con los profesionales, para la opción de cita por profesional
+         */
         binding.chipGroupProfesionalesOpcionProfesional.setOnCheckedChangeListener { group, checkedId ->
             val chip: Chip? = group.findViewById(checkedId)
             chip?.let { chipView ->
@@ -130,6 +142,9 @@ class FragmentCita : Fragment(), View.OnClickListener, AdapterView.OnItemSelecte
             }
         }
 
+        /**
+         * Controla los cambios en el grupo de chips con los horarios, para la opción de cita por profesional
+         */
         binding.chipGroupHoraOpcionProfesional.setOnCheckedChangeListener { group, checkedId ->
             val chip: Chip? = group.findViewById(checkedId)
             chip?.let { chipView ->
@@ -176,7 +191,7 @@ class FragmentCita : Fragment(), View.OnClickListener, AdapterView.OnItemSelecte
                 addCita()
 
             }
-            // Selecciona las fechas no disponibles y muestra el calendario con un máximo de 60 días.
+            //Selecciona las fechas no disponibles y muestra el calendario con un máximo de 60 días.
             fechaSeleccionadaInput ->{
                 val now = Calendar.getInstance()
                 val dpd = DatePickerDialog.newInstance(
@@ -219,7 +234,7 @@ class FragmentCita : Fragment(), View.OnClickListener, AdapterView.OnItemSelecte
     }
 
     /**
-     * Método que obtiene las fechas no disponibles para reservar citas
+     * Obtiene las fechas no disponibles para reservar citas
      */
     @RequiresApi(Build.VERSION_CODES.O)
     fun cargarFechasOcupadas() {
@@ -235,7 +250,7 @@ class FragmentCita : Fragment(), View.OnClickListener, AdapterView.OnItemSelecte
     }
 
     /**
-     * Método que obtiene los empleados disponibles en la opción de citas por hora
+     * Obtiene los empleados disponibles en la opción de citas por hora
      * y rellena los chips. Si se selecciona un empleado distinto, resetea los chips de los servicios.
      */
     fun cargarEmpleadosDisponiblesOpcionHora() {
@@ -274,7 +289,7 @@ class FragmentCita : Fragment(), View.OnClickListener, AdapterView.OnItemSelecte
     }
 
     /**
-     * Método que obtiene los empleados disponibles en la opción de citas por profesional
+     * Obtiene los empleados disponibles en la opción de citas por profesional
      * y rellena los chips. Si se selecciona un empleado distinto, resetea los chips de los servicios.
      */
     fun cargarEmpleadosDisponiblesOpcionProfesional(){
@@ -313,7 +328,7 @@ class FragmentCita : Fragment(), View.OnClickListener, AdapterView.OnItemSelecte
     }
 
     /**
-     * Método que obtiene los servicios disponibles por cada empleado y rellena los chips.
+     * Obtiene los servicios disponibles por cada empleado y rellena los chips.
      */
     fun cargarServiciosPorEmpleado() {
         var job: ArrayList<Servicio>
@@ -370,7 +385,7 @@ class FragmentCita : Fragment(), View.OnClickListener, AdapterView.OnItemSelecte
     }
 
     /**
-     * Método que obtiene los horarios disponibles por fecha y rellena los chips.
+     * Obtiene los horarios disponibles por fecha y rellena los chips.
      */
     fun cargarHorariosLibresDia() {
         var job: ArrayList<Horario>
@@ -400,7 +415,7 @@ class FragmentCita : Fragment(), View.OnClickListener, AdapterView.OnItemSelecte
     }
 
     /**
-     * Método que obtiene los horarios disponibles por empleado y fecha y rellena los chips.
+     * Obtiene los horarios disponibles por empleado y fecha y rellena los chips.
      */
     fun cargarHorariosLibresEmpleadosFecha() {
         var job: ArrayList<Horario>
@@ -430,7 +445,7 @@ class FragmentCita : Fragment(), View.OnClickListener, AdapterView.OnItemSelecte
     }
 
     /**
-     * Método que obtiene el listado de clientes y settea el spinner con esos datos.
+     * Obtiene el listado de clientes y settea el spinner con esos datos.
      */
     fun cargarClientes() {
         var job: ArrayList<Usuario>
@@ -445,7 +460,7 @@ class FragmentCita : Fragment(), View.OnClickListener, AdapterView.OnItemSelecte
     }
 
     /**
-     * Método que añade una nueva cita. Si la añade el empleado, se usará el id del cliente seleccionado. Si es el cliente, se usará
+     * Añade una nueva cita. Si la añade el empleado, se usará el id del cliente seleccionado. Si es el cliente, se usará
      * su id de usuario.
      */
     fun addCita(){
@@ -483,7 +498,7 @@ class FragmentCita : Fragment(), View.OnClickListener, AdapterView.OnItemSelecte
     }
 
     /**
-     * Método que resetea los objetos y limpia listas tras añadir una cita en la opción de hora.
+     * Resetea los objetos y limpia listas tras añadir una cita en la opción de hora.
      */
     private fun reseteaOpcionesModoHora() {
         binding.chipGroupHoraOpcionHora.clearCheck()
@@ -503,7 +518,7 @@ class FragmentCita : Fragment(), View.OnClickListener, AdapterView.OnItemSelecte
     }
 
     /**
-     * Método que resetea los objetos y limpia listas tras añadir una cita en la opción de profesional.
+     * Resetea los objetos y limpia listas tras añadir una cita en la opción de profesional.
      */
     private fun reseteaOpcionesModoProfesional() {
         binding.chipGroupHoraOpcionProfesional.clearCheck()
@@ -522,6 +537,9 @@ class FragmentCita : Fragment(), View.OnClickListener, AdapterView.OnItemSelecte
         fechaSeleccionadaInput.setText(getString(string.elige_fecha))
     }
 
+    /**
+     * Establece el spinner con sus datos
+     */
     private fun setSpinner() {
 
         val clientes = model.getClientes().value!!
@@ -541,7 +559,7 @@ class FragmentCita : Fragment(), View.OnClickListener, AdapterView.OnItemSelecte
     }
 
     /**
-     * Obtiene el id del cliente seleccionadd en el spinner.
+     * Obtiene el id del cliente seleccionado en el spinner.
      */
     override fun onItemSelected(p0: AdapterView<*>?, p1: View?, p2: Int, p3: Long) {
         idClienteSeleccionado = model.getClientes().value!![p2].idUsuario!!
@@ -552,7 +570,7 @@ class FragmentCita : Fragment(), View.OnClickListener, AdapterView.OnItemSelecte
     }
 
     /**
-     * Método que obtiene la fecha seleccionada para la cita.
+     * Obtiene la fecha seleccionada para la cita.
      */
     override fun onDateSet(view: DatePickerDialog?, year: Int, monthOfYear: Int, dayOfMonth: Int) {
 

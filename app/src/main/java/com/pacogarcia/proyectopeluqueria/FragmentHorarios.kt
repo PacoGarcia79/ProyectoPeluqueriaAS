@@ -28,7 +28,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlin.math.absoluteValue
 
-
+/**
+ * Fragmento para la gestión de los horarios del establecimiento
+ */
 class FragmentHorarios : Fragment(), View.OnClickListener {
 
     private lateinit var binding: FragmentHorariosBinding
@@ -55,6 +57,10 @@ class FragmentHorarios : Fragment(), View.OnClickListener {
     var cadenaStringHorarios: String = ""
     var cadenaStringEmpleados: String = ""
 
+    /**
+     * Implementación de ActionMode.Callback, que permite que se puedan habilitar
+     * los elementos seleccionados mediante el botón que se muestra en la action bar
+     */
     private val actionModeCallback = object : ActionMode.Callback {
         override fun onCreateActionMode(mode: ActionMode, menu: Menu):
                 Boolean {
@@ -76,7 +82,7 @@ class FragmentHorarios : Fragment(), View.OnClickListener {
 
                     val listasString = obtieneListaStringDisponibilidad(lista)
 
-                    deshabilitaDisponibilidadIds(listasString, lista)
+                    habilitaDisponibilidadIds(listasString, lista)
 
                     true
                 }
@@ -98,6 +104,10 @@ class FragmentHorarios : Fragment(), View.OnClickListener {
 
         binding = FragmentHorariosBinding.inflate(inflater, container, false)
 
+
+        /**
+         * Guarda el estado del tracker en la actividad
+         */
         if (savedInstanceState != null)
             tracker?.onRestoreInstanceState(savedInstanceState)
 
@@ -120,6 +130,14 @@ class FragmentHorarios : Fragment(), View.OnClickListener {
         return binding.root
     }
 
+
+    /**
+     * A partir del listado del tracker obtiene una cadena con los ids reales de cada uno de los elementos
+     *
+     * @param lista lista de números de tipo long creada por el tracker y que va modificando conforme se seleccionan o deseleccionan
+     * elementos
+     * @return cadena string con los ids
+     */
     fun obtieneListaStringDisponibilidad(lista : List<Long>) : String{
         val sb = StringBuilder()
         val listaIdDisponibilidad : ArrayList<Int> = ArrayList()
@@ -137,7 +155,14 @@ class FragmentHorarios : Fragment(), View.OnClickListener {
         return sb.toString()
     }
 
-    private fun deshabilitaDisponibilidadIds(disponibilidadListaString: String, lista : List<Long>) {
+    /**
+     * Habilita los elementos seleccionados en el listado
+     *
+     * @param disponibilidadListaString string con los ids de los elementos seleccionados
+     * @param lista lista de números de tipo long creada por el tracker y que va modificando conforme se seleccionan o deseleccionan
+     * elementos
+     */
+    private fun habilitaDisponibilidadIds(disponibilidadListaString: String, lista : List<Long>) {
         CoroutineScope(Dispatchers.Main).launch {
             val resultado = ApiRestAdapter.putDelDisponibilidadIds(disponibilidadListaString).await()
 
@@ -151,13 +176,7 @@ class FragmentHorarios : Fragment(), View.OnClickListener {
                 tracker?.clearSelection()
                 actionMode = null
 
-                binding.chipGroupHoras.clearCheck()
-                binding.chipGroupProfesionales.clearCheck()
-                fechaComienzoPeriodo = ""
-                fechaFinPeriodo = ""
-                fechaComienzoMostrar = ""
-                fechaFinMostrar = ""
-                binding.fechasSeleccionadas.text = "Sin fechas seleccionadas"
+                refrescaPantalla()
 
                 Snackbar.make(
                     binding.root,
@@ -175,6 +194,9 @@ class FragmentHorarios : Fragment(), View.OnClickListener {
         }
     }
 
+    /**
+     * Establece el tracker y añade un observer para mostrar el número de elementos seleccionados
+     */
     fun setTracker() {
 
         tracker = SelectionTracker.Builder(
@@ -205,6 +227,11 @@ class FragmentHorarios : Fragment(), View.OnClickListener {
         adaptador.setTracker(tracker)
     }
 
+    /**
+     * Inicia el adaptador y el recycler
+     *
+     * @param datos array de datos para el adaptador
+     */
     fun iniciaAdaptadorRecycler(datos: ArrayList<Disponibilidad>) {
 
         adaptador = AdaptadorDisponibilidad(datos, requireActivity())
@@ -217,6 +244,9 @@ class FragmentHorarios : Fragment(), View.OnClickListener {
         setTracker()
     }
 
+    /**
+     * Carga el listado con todos los empleados y establece los chips
+     */
     fun cargarEmpleados() {
         var job: ArrayList<Usuario>
         CoroutineScope(Dispatchers.Main).launch {
@@ -239,6 +269,9 @@ class FragmentHorarios : Fragment(), View.OnClickListener {
         }
     }
 
+    /**
+     * Carga el listado con todos los horarios y establece los chips
+     */
     fun cargarHorarios() {
         var job: ArrayList<Horario>
         CoroutineScope(Dispatchers.Main).launch {
@@ -261,6 +294,9 @@ class FragmentHorarios : Fragment(), View.OnClickListener {
         }
     }
 
+    /**
+     * Carga el listado con todas las fechas deshabilitadas (Objeto type Disponibilidad)
+     */
     fun cargarHorariosDeshabilitados() {
         var job: ArrayList<Disponibilidad>
         CoroutineScope(Dispatchers.Main).launch {
@@ -277,6 +313,7 @@ class FragmentHorarios : Fragment(), View.OnClickListener {
     override fun onClick(p0: View?) {
         when (p0) {
             fechasSeleccionadas -> {
+                // Carga el date picker con selección de rango de fechas
                 val dateRangePicker =
                     MaterialDatePicker.Builder.dateRangePicker()
                         .setTitleText("Selecciona fechas")
@@ -327,6 +364,9 @@ class FragmentHorarios : Fragment(), View.OnClickListener {
         }
     }
 
+    /**
+     * Muestra diálogo de error
+     */
     private fun muestraDialogo() {
         MaterialAlertDialogBuilder(requireContext())
             .setTitle(resources.getString(R.string.gesti_n_de_horarios))
@@ -337,6 +377,12 @@ class FragmentHorarios : Fragment(), View.OnClickListener {
             .show()
     }
 
+    /**
+     * Obtiene la cadena de string con los ids separados por coma
+     * a partir de la MutableList de ids
+     *
+     * @param lista MutableList<Int> de ids obtenidos de los chips
+     */
     fun obtieneListadoString(lista: MutableList<Int>): String {
         val sb = StringBuilder()
         for (i in 0 until lista.size) {
@@ -349,6 +395,9 @@ class FragmentHorarios : Fragment(), View.OnClickListener {
         return sb.toString()
     }
 
+    /**
+     * Obtiene las dos cadenas necesarias de strings con ids
+     */
     fun obtieneListadosString() {
         val checkedChipHorasIds = binding.chipGroupHoras.checkedChipIds
         val checkedChipEmpleadosIds = binding.chipGroupProfesionales.checkedChipIds
@@ -356,6 +405,9 @@ class FragmentHorarios : Fragment(), View.OnClickListener {
         cadenaStringEmpleados = obtieneListadoString(checkedChipEmpleadosIds)
     }
 
+    /**
+     * Deshabilita las fechas, horarios y empleados seleccionados
+     */
     fun deshabilitaDisponibilidad() {
 
         CoroutineScope(Dispatchers.Main).launch {
@@ -397,6 +449,9 @@ class FragmentHorarios : Fragment(), View.OnClickListener {
         }
     }
 
+    /**
+     * Habilita las fechas seleccionadas, con los horarios y empleados
+     */
     fun habilitaDisponibilidad() {
 
         CoroutineScope(Dispatchers.Main).launch {
@@ -432,6 +487,9 @@ class FragmentHorarios : Fragment(), View.OnClickListener {
         }
     }
 
+    /**
+     * Refresca pantalla después de los cambios
+     */
     private fun refrescaPantalla() {
         binding.chipGroupHoras.clearCheck()
         binding.chipGroupProfesionales.clearCheck()
@@ -452,6 +510,11 @@ class FragmentHorarios : Fragment(), View.OnClickListener {
         }
     }
 
+    /**
+     * Actualiza el adaptador con los nuevos datos
+     *
+     * @param datos nuevo array de datos para el adaptador
+     */
     fun updateRecyclerData(datos: ArrayList<Disponibilidad>) {
         adaptador.setData(datos)
         adaptador.notifyDataSetChanged()

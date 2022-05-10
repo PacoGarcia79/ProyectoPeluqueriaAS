@@ -25,9 +25,9 @@
         tools:layout="@layout/fragment_cuenta" />
     <fragment
         android:id="@+id/fragmentProductos"
-        android:name="com.pacogarcia.proyectopeluqueria.FragmentProductos"
+        android:name="com.pacogarcia.proyectopeluqueria.FragmentGrupoProductos"
         android:label="fragment_productos"
-        tools:layout="@layout/fragment_productos" >
+        tools:layout="@layout/fragment_grupo_productos" >
         <action
             android:id="@+id/action_fragmentProductos_to_fragmentTipoProducto"
             app:destination="@id/fragmentTipoProducto" />
@@ -51,7 +51,7 @@
         tools:layout="@layout/fragment_reservas" />
     <fragment
         android:id="@+id/fragmentTipoProducto"
-        android:name="com.pacogarcia.proyectopeluqueria.FragmentTipoProducto"
+        android:name="com.pacogarcia.proyectopeluqueria.FragmentProducto"
         android:label="FragmentTipoProducto" />
     <action android:id="@+id/action_global_fragmentProductos4" app:destination="@id/fragmentProductos" />
     <action android:id="@+id/action_global_fragmentCita" app:destination="@id/fragmentCita" />
@@ -72,7 +72,7 @@
         android:label="DialogoConfirmacion" /><action android:id="@+id/action_global_dialogoConfirmacion" app:destination="@id/dialogoConfirmacion"/>
     <fragment
         android:id="@+id/fragmentListaProductos"
-        android:name="com.pacogarcia.proyectopeluqueria.FragmentListaProductos"
+        android:name="com.pacogarcia.proyectopeluqueria.FragmentListaProductosBusqueda"
         android:label="FragmentListaProductos" >
         <action
             android:id="@+id/action_fragmentListaProductos_to_fragmentTipoProducto"
@@ -134,7 +134,7 @@
 <!--        tools:layout="@layout/fragment_cuenta" />-->
 <!--    <fragment-->
 <!--        android:id="@+id/fragmentProductos"-->
-<!--        android:name="com.pacogarcia.proyectopeluqueria.FragmentProductos"-->
+<!--        android:name="com.pacogarcia.proyectopeluqueria.FragmentGrupoProductosuctos"-->
 <!--        android:label="fragment_productos"-->
 <!--        tools:layout="@layout/fragment_productos" />-->
 <!--    <dialog-->

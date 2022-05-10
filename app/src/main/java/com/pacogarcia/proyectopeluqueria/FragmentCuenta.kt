@@ -42,7 +42,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.util.concurrent.TimeUnit
 
-
+/**
+ * Fragmento para la gestión de los datos personales del usuario
+ */
 class FragmentCuenta : Fragment(), View.OnClickListener {
 
     private lateinit var registerPermisosCamera: ActivityResultLauncher<String>
@@ -82,6 +84,15 @@ class FragmentCuenta : Fragment(), View.OnClickListener {
         botonAceptar = binding.aceptar
         botonAceptar.setOnClickListener(this)
 
+        /**
+         * Programación reactiva:
+         * Detecta cuando el usuario está escribiendo en los campos.
+         * Ignora todos los eventos de cambio de texto que ocurren dentro de un corto espacio de tiempo, ya que esto indica que el
+         * usuario todavía está escribiendo.
+         * Realiza una acción cuando el usuario deje de escribir.
+         *
+         * @author https://code.tutsplus.com/es/tutorials/kotlin-reactive-programming-for-an-android-sign-up-screen--cms-31585
+         */
         respondeEventoCambioTextoEmail()
         respondeEventoCambioTextoPasswordConfirmacion()
         respondeEventoCambioTextoNombre()
@@ -90,6 +101,10 @@ class FragmentCuenta : Fragment(), View.OnClickListener {
         respondeEventoCambioTextoTelefono()
         respondeEventoCambioTextoPassword()
 
+        /**
+         * Controla los cambios en los EditText para no dejar ningún campo vacío.
+         * Además controla también el estado del botón aceptar según sea la comprobación de los datos y según sea el estado del switch
+         */
         val textWatcher: TextWatcher = object : TextWatcher {
             override fun beforeTextChanged(charSequence: CharSequence, i: Int, i2: Int, i3: Int) {}
             override fun onTextChanged(charSequence: CharSequence, i: Int, i2: Int, i3: Int) {
@@ -113,6 +128,10 @@ class FragmentCuenta : Fragment(), View.OnClickListener {
 
         iniciaCardFlip()
 
+        /**
+         * Controla los cambios en el switch, y según esos cambios activa o desactiva los campos de la contraseña y activa o
+         * desactiva el botón aceptar.
+         */
         binding.switchPassword.setOnCheckedChangeListener { buttonView, isChecked ->
             if (isChecked) {
                 binding.textBlockPassword.isEnabled = true
@@ -148,16 +167,26 @@ class FragmentCuenta : Fragment(), View.OnClickListener {
             }
     }
 
+    /**
+     * Lanza el intent para tomar la foto
+     */
     fun tomarFoto() {
         val cameraIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
         resultadoCamara.launch(cameraIntent)
     }
 
+    /**
+     * Lanza el intent para seleccionar una foto de la galería
+     */
     fun tomarGaleria() {
         val cameraIntent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.INTERNAL_CONTENT_URI)
         resultadoGaleria.launch(cameraIntent)
     }
 
+    /**
+     * Registra las actividades para esperar resultados de otras activitys o fragments.
+     * Se debe registrar la actividad para posibles resultados en el método onCreate().
+     */
     fun creaContratos() {
 
         resultadoCamara =
@@ -177,6 +206,9 @@ class FragmentCuenta : Fragment(), View.OnClickListener {
             }
     }
 
+    /**
+     * Establece los campos de la tarjeta con los datos del usuario
+     */
     private fun setUserCard() {
         val usuario = model.getUsuario.value
         val nombreCompleto = "${usuario?.nombre} ${usuario?.apellidos}"
@@ -192,6 +224,9 @@ class FragmentCuenta : Fragment(), View.OnClickListener {
         binding.phoneText.setText(usuario?.telefono)
     }
 
+    /**
+     * Inicia y controla el movimiento de la tarjeta
+     */
     private fun iniciaCardFlip() {
         val scale = requireContext().resources.displayMetrics.density
 
@@ -250,6 +285,9 @@ class FragmentCuenta : Fragment(), View.OnClickListener {
         }
     }
 
+    /**
+     * Gestiona el menú popup que se muestra al hacer click en la foto
+     */
     private fun showPopup(view: View) {
         val popup = PopupMenu(requireContext(), view)
         popup.inflate(R.menu.menu_popup)
@@ -292,19 +330,7 @@ class FragmentCuenta : Fragment(), View.OnClickListener {
                     usuario.email = email
                     usuario.telefono = telefono
 
-                    val foto = binding.fotoUsuario.drawable?.let { it as BitmapDrawable }
-                    if (foto != null) {
-                        val fotoRed =
-                            ImagenUtilidad.redimensionarImagenMaximo(foto.bitmap!!, 200f, 200f)
-                        usuario.foto = ImagenUtilidad.convertirImagenString(fotoRed)
-                    } else {
-                        usuario.foto = ImagenUtilidad.convertirImagenString(
-                            BitmapFactory.decodeResource(
-                                resources,
-                                R.drawable.avatar
-                            )
-                        )
-                    }
+                    setFotoUsuario(usuario)
 
                     modificaUsuario(usuario)
 
@@ -319,19 +345,7 @@ class FragmentCuenta : Fragment(), View.OnClickListener {
                     usuario.password = Hash.hash(password)
                     usuario.telefono = telefono
 
-                    val foto = binding.fotoUsuario.drawable?.let { it as BitmapDrawable }
-                    if (foto != null) {
-                        val fotoRed =
-                            ImagenUtilidad.redimensionarImagenMaximo(foto.bitmap!!, 200f, 200f)
-                        usuario.foto = ImagenUtilidad.convertirImagenString(fotoRed)
-                    } else {
-                        usuario.foto = ImagenUtilidad.convertirImagenString(
-                            BitmapFactory.decodeResource(
-                                resources,
-                                R.drawable.avatar
-                            )
-                        )
-                    }
+                    setFotoUsuario(usuario)
 
                     modificaUsuarioPassword(usuario)
                 }
@@ -339,6 +353,32 @@ class FragmentCuenta : Fragment(), View.OnClickListener {
         }
     }
 
+    /**
+     * Establece la foto del usuario que luego se convertirá a Base64 y se subirá a la base de datos
+     *
+     * @param usuario usuario nuevo
+     */
+    private fun setFotoUsuario(usuario: Usuario) {
+        val foto = binding.fotoUsuario.drawable?.let { it as BitmapDrawable }
+        if (foto != null) {
+            val fotoRed =
+                ImagenUtilidad.redimensionarImagenMaximo(foto.bitmap!!, 200f, 200f)
+            usuario.foto = ImagenUtilidad.convertirImagenString(fotoRed)
+        } else {
+            usuario.foto = ImagenUtilidad.convertirImagenString(
+                BitmapFactory.decodeResource(
+                    resources,
+                    R.drawable.avatar
+                )
+            )
+        }
+    }
+
+    /**
+     * Modifica los datos del usuario, sin incluir la contraseña
+     *
+     * @param usuario usuario a modificar
+     */
     private fun modificaUsuario(usuario: Usuario) {
         CoroutineScope(Dispatchers.Main).launch {
             val resultado = ApiRestAdapter.modificarUsuario(usuario).await()
@@ -361,6 +401,11 @@ class FragmentCuenta : Fragment(), View.OnClickListener {
         }
     }
 
+    /**
+     * Modifica los datos del usuario, incluyendo la contraseña
+     *
+     * @param usuario usuario a modificar
+     */
     private fun modificaUsuarioPassword(usuario: Usuario) {
         CoroutineScope(Dispatchers.Main).launch {
             val resultado = ApiRestAdapter.modificarUsuarioPassword(usuario).await()
@@ -383,11 +428,17 @@ class FragmentCuenta : Fragment(), View.OnClickListener {
         }
     }
 
+    /**
+     * Comprueba los campos cuando no se modifica la contraseña. Se usará para gestionar que el botón aceptar esté o no habilitado.
+     */
     fun comprobarDatos(): Boolean {
         return !(binding.nombreBackText.text.isNullOrEmpty() || binding.apellidosText.text.isNullOrEmpty() || binding.userNameText.text.isNullOrEmpty()
                 || binding.mailText.text.isNullOrEmpty() || binding.phoneText.text.isNullOrEmpty())
     }
 
+    /**
+     * Comprueba los campos cuando sí se modifica la contraseña. Se usará para gestionar que el botón aceptar esté o no habilitado.
+     */
     fun comprobarDatosContrasenya(): Boolean {
         return !(binding.nombreBackText.text.isNullOrEmpty() || binding.apellidosText.text.isNullOrEmpty() || binding.userNameText.text.isNullOrEmpty()
                 || binding.passwordText.text.isNullOrEmpty() || binding.mailText.text.isNullOrEmpty() || binding.phoneText.text.isNullOrEmpty() ||
@@ -395,6 +446,12 @@ class FragmentCuenta : Fragment(), View.OnClickListener {
             .equals(binding.confirmarPasswordText.text.toString()))
     }
 
+    /**
+     * Obtiene los datos del usuario después de la modificación, y los setea en la tarjeta.
+     * Además, coloca la tarjeta en su cara delantera
+     *
+     * @param idUsuario id del usuario del que se quieren obtener los datos
+     */
     fun getUsuarioDespuesModificar(idUsuario: Int) {
         CoroutineScope(Dispatchers.Main).launch {
             val job = ApiRestAdapter.getUserData(idUsuario).await()
@@ -420,6 +477,10 @@ class FragmentCuenta : Fragment(), View.OnClickListener {
         }
     }
 
+
+    /**
+     * Responde a eventos de cambio de texto en el campo de confirmación de password
+     */
     private fun respondeEventoCambioTextoPasswordConfirmacion() {
         RxTextView.afterTextChangeEvents(binding.confirmarPasswordText)
             .skipInitialValue()
@@ -436,6 +497,9 @@ class FragmentCuenta : Fragment(), View.OnClickListener {
             .subscribe()
     }
 
+    /**
+     * Responde a eventos de cambio de texto en el campo email
+     */
     private fun respondeEventoCambioTextoEmail() {
         RxTextView.afterTextChangeEvents(binding.mailText)
             .skipInitialValue()
@@ -455,6 +519,9 @@ class FragmentCuenta : Fragment(), View.OnClickListener {
             .subscribe()
     }
 
+    /**
+     * Responde a eventos de cambio de texto en el campo nombre
+     */
     private fun respondeEventoCambioTextoNombre() {
         RxTextView.afterTextChangeEvents(binding.nombreBackText)
             .skipInitialValue()
@@ -473,6 +540,9 @@ class FragmentCuenta : Fragment(), View.OnClickListener {
             .subscribe()
     }
 
+    /**
+     * Responde a eventos de cambio de texto en el campo apellidos
+     */
     private fun respondeEventoCambioTextoApellidos() {
         RxTextView.afterTextChangeEvents(binding.apellidosText)
             .skipInitialValue()
@@ -491,6 +561,9 @@ class FragmentCuenta : Fragment(), View.OnClickListener {
             .subscribe()
     }
 
+    /**
+     * Responde a eventos de cambio de texto en el campo nombre de usuario
+     */
     private fun respondeEventoCambioTextoUserName() {
         RxTextView.afterTextChangeEvents(binding.userNameText)
             .skipInitialValue()
@@ -509,6 +582,9 @@ class FragmentCuenta : Fragment(), View.OnClickListener {
             .subscribe()
     }
 
+    /**
+     * Responde a eventos de cambio de texto en el campo telefono
+     */
     private fun respondeEventoCambioTextoTelefono() {
         RxTextView.afterTextChangeEvents(binding.phoneText)
             .skipInitialValue()
@@ -527,6 +603,9 @@ class FragmentCuenta : Fragment(), View.OnClickListener {
             .subscribe()
     }
 
+    /**
+     * Responde a eventos de cambio de texto en el campo password
+     */
     private fun respondeEventoCambioTextoPassword() {
         RxTextView.afterTextChangeEvents(binding.passwordText)
             .skipInitialValue()
@@ -545,6 +624,9 @@ class FragmentCuenta : Fragment(), View.OnClickListener {
             .subscribe()
     }
 
+    /**
+     * Función de transformación cuya funcion es que en caso de que surje un error, continúe con la secuencia
+     */
     private inline fun retryWhenError(crossinline onError: (ex: Throwable) -> Unit): ObservableTransformer<String, String> =
         ObservableTransformer { observable ->
             observable.retryWhen { errors ->
@@ -555,6 +637,9 @@ class FragmentCuenta : Fragment(), View.OnClickListener {
             }
         }
 
+    /**
+     * Se usa para validar que el email tenga el formato correcto, y en caso contrario mostrar el mensaje de error
+     */
     private val validateEmailAddress = ObservableTransformer<String, String> { observable ->
         observable.flatMap {
             Observable.just(it).map { it.trim() }
@@ -573,6 +658,9 @@ class FragmentCuenta : Fragment(), View.OnClickListener {
         }
     }
 
+    /**
+     * Se usa para validar que ambas contraseñas son iguales, y en caso contrario mostrar el mensaje de error
+     */
     private val validatePassword = ObservableTransformer<String, String> { observable ->
         observable.flatMap {
             Observable.just(it).map { it.trim() }
@@ -589,6 +677,10 @@ class FragmentCuenta : Fragment(), View.OnClickListener {
         }
     }
 
+    /**
+     * Se usa para comprobar la longitud de los datos introducidos. En este caso sirve para corroborar
+     * que no están vacíos, y en caso contrario mostrar el mensaje de error
+     */
     private val validateFieldsLength = ObservableTransformer<String, String> { observable ->
         observable.flatMap {
             Observable.just(it).map { it.trim() }

@@ -133,6 +133,11 @@ class DialogoLogin : DialogFragment(), View.OnClickListener {
         }
     }
 
+    /**
+     * Obtiene los datos del usuario a partir de su id
+     *
+     * @param idUsuario id del usuario
+     */
     fun getUsuarioIdentificado(idUsuario: Int) {
         CoroutineScope(Dispatchers.Main).launch {
             val job = ApiRestAdapter.getUserData(idUsuario).await()

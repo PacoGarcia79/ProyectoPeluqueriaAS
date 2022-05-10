@@ -15,16 +15,19 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.pacogarcia.proyectopeluqueria.clasesrecycler.AdaptadorListaProductos
-import com.pacogarcia.proyectopeluqueria.databinding.FragmentListaProductosBinding
+import com.pacogarcia.proyectopeluqueria.databinding.FragmentListaProductosBusquedaBinding
 import com.pacogarcia.proyectopeluqueria.modelos.Producto
 import com.pacogarcia.proyectopeluqueria.viewmodel.ItemViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-class FragmentListaProductos : Fragment(), View.OnClickListener {
+/**
+ * Fragmento para la gestión del listado de productos resultante de la búsqueda
+ */
+class FragmentListaProductosBusqueda : Fragment(), View.OnClickListener {
 
-    private lateinit var binding: FragmentListaProductosBinding
+    private lateinit var binding: FragmentListaProductosBusquedaBinding
     private lateinit var adaptador: AdaptadorListaProductos
     private lateinit var recycler: RecyclerView
     private lateinit var navController: NavController
@@ -37,12 +40,18 @@ class FragmentListaProductos : Fragment(), View.OnClickListener {
     ): View? {
         super.onCreateView(inflater, container, savedInstanceState)
 
-        binding = FragmentListaProductosBinding.inflate(inflater, container, false)
+        binding = FragmentListaProductosBusquedaBinding.inflate(inflater, container, false)
 
         recycler = binding.recyclerListProductos
 
         navController = NavHostFragment.findNavController(this)
 
+
+        /**
+         * Controla la vuelta al fragmento mediante backpressed. Si no existen elementos en el listado de productos por búsqueda,
+         * los carga desde el API.
+         * En caso contrario, carga el adaptador con los datos que existen en el listado.
+         */
         if(model.getProductosPorBusqueda().value!!.size == 0){
             getProductosSearch(model.query)
         }
@@ -50,7 +59,9 @@ class FragmentListaProductos : Fragment(), View.OnClickListener {
             iniciaAdaptadorRecycler(model.getProductosPorBusqueda().value!!)
         }
 
-
+        /**
+         * Listener para la barra de búsqueda
+         */
         binding.searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String): Boolean {
                 val listaNueva : ArrayList<Producto> = ArrayList()
@@ -78,6 +89,11 @@ class FragmentListaProductos : Fragment(), View.OnClickListener {
         return binding.root
     }
 
+    /**
+     * Obtiene los productos resultado de la búsqueda por palabra
+     *
+     * @param query cadena para la búsqueda
+     */
     fun getProductosSearch(query: String) {
         CoroutineScope(Dispatchers.Main).launch {
             val job = ApiRestAdapter.cargarProductosSearch(query).await()
@@ -91,6 +107,11 @@ class FragmentListaProductos : Fragment(), View.OnClickListener {
         }
     }
 
+    /**
+     * Inicia el adaptador y el recycler
+     *
+     * @param datos array de datos para el adaptador
+     */
     fun iniciaAdaptadorRecycler(datos: ArrayList<Producto>) {
 
         adaptador = AdaptadorListaProductos(datos, requireContext())
@@ -107,6 +128,10 @@ class FragmentListaProductos : Fragment(), View.OnClickListener {
         adaptador.onClick(this)
     }
 
+    /**
+     * Envía mediante bundle la posición del producto en el listado resultado de la búsqueda
+     * Al hacer click en el producto de la lista, navega hacía su propia página con todos los datos
+     */
     override fun onClick(p0: View?) {
         posicion = recycler.getChildAdapterPosition(p0!!)
         val bundle = Bundle().apply {
@@ -116,11 +141,19 @@ class FragmentListaProductos : Fragment(), View.OnClickListener {
         navController.navigate(R.id.action_fragmentListaProductos_to_fragmentTipoProducto, bundle)
     }
 
+    /**
+     * Actualiza el adaptador con los nuevos datos
+     *
+     * @param productos nuevo array de datos para el adaptador
+     */
     fun updateRecyclerData(productos: ArrayList<Producto>) {
         adaptador.setData(productos)
         adaptador.notifyDataSetChanged()
     }
 
+    /**
+     * Controla el cambio de orientación para modificar el layout del recycler
+     */
     override fun onConfigurationChanged(newConfig: Configuration) {
 
         if (newConfig != null) {

@@ -29,7 +29,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.time.LocalDateTime
 
-
+/**
+ * Fragmento para la gestión de las reservas
+ */
 class FragmentReservas : Fragment(), View.OnClickListener {
 
     private lateinit var binding: FragmentReservasBinding
@@ -37,8 +39,6 @@ class FragmentReservas : Fragment(), View.OnClickListener {
     private val model: ItemViewModel by activityViewModels()
     private var fechaComienzoPeriodo: Long = 0
     private var fechaFinPeriodo: Long = 0
-
-    var posicion = 0
 
     private var tracker: SelectionTracker<Long>? = null
     private var actionMode: ActionMode? = null
@@ -48,6 +48,10 @@ class FragmentReservas : Fragment(), View.OnClickListener {
     private lateinit var actividadPrincipal: MainActivity
     var citas: ArrayList<Cita> = ArrayList()
 
+    /**
+     * Implementación de ActionMode.Callback, que permite que se puedan cancelar
+     * los elementos seleccionados mediante el botón que se muestra en la action bar
+     */
     private val actionModeCallback = object : ActionMode.Callback {
         override fun onCreateActionMode(mode: ActionMode, menu: Menu):
                 Boolean {
@@ -92,6 +96,7 @@ class FragmentReservas : Fragment(), View.OnClickListener {
 
         actividadPrincipal = (requireActivity() as MainActivity)
 
+        // Guarda el estado del tracker en la actividad
         if (savedInstanceState != null)
             tracker?.onRestoreInstanceState(savedInstanceState)
 
@@ -105,6 +110,7 @@ class FragmentReservas : Fragment(), View.OnClickListener {
         val idUsuario = model.getUsuario.value?.idUsuario!!
         val local = LocalDateTime.now()
 
+        // Carga las citas para la fecha actual y para el usuario, dependiendo del rol
         getCitas(formatLocalDateTimeParaMySQL(local), formatLocalDateTimeParaMySQL(local), idUsuario)
 
         return binding.root
@@ -113,6 +119,7 @@ class FragmentReservas : Fragment(), View.OnClickListener {
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onClick(p0: View?) {
         when (p0) {
+            // Carga el date picker con selección de rango de fechas y refresca el listado de citas según las nuevas fechas
             fabSearch -> {
                 val dateRangePicker =
                     MaterialDatePicker.Builder.dateRangePicker()
@@ -141,6 +148,13 @@ class FragmentReservas : Fragment(), View.OnClickListener {
         }
     }
 
+    /**
+     * A partir del listado del tracker obtiene una cadena con los ids reales de cada uno de los elementos
+     *
+     * @param lista lista de números de tipo long creada por el tracker y que va modificando conforme se seleccionan o deseleccionan
+     * elementos
+     * @return cadena string con los ids
+     */
     fun obtieneListaStringCitas(lista : List<Long>) : String{
         val sb = StringBuilder()
         val listaIdCitas : ArrayList<Int> = ArrayList()
@@ -158,6 +172,9 @@ class FragmentReservas : Fragment(), View.OnClickListener {
         return sb.toString()
     }
 
+    /**
+     * Establece el tracker y añade un observer para mostrar el número de elementos seleccionados
+     */
     fun setTracker() {
 
         tracker = SelectionTracker.Builder(
@@ -188,6 +205,11 @@ class FragmentReservas : Fragment(), View.OnClickListener {
         adaptador.setTracker(tracker)
     }
 
+    /**
+     * Inicia el adaptador y el recycler
+     *
+     * @param datos array de datos para el adaptador
+     */
     fun iniciaAdaptadorRecycler(datos: ArrayList<Cita>) {
 
         adaptador = AdaptadorReservas(datos, requireActivity())
@@ -200,6 +222,13 @@ class FragmentReservas : Fragment(), View.OnClickListener {
         setTracker()
     }
 
+    /**
+     * Obtiene las citas de confirmadas según el rol del usuario, e inicia el adaptador
+     *
+     * @param fechaInicio fecha inicio del periodo
+     * @param fechaFin fecha fin del periodo
+     * @param idUsuario id del usuario
+     */
     fun getCitas(fechaInicio: String, fechaFin: String, idUsuario: Int) {
         var job: ArrayList<Cita>
         CoroutineScope(Dispatchers.Main).launch {
@@ -226,6 +255,13 @@ class FragmentReservas : Fragment(), View.OnClickListener {
         }
     }
 
+    /**
+     * Cancela las citas seleccionadas
+     *
+     * @param citasListaString cadena de string con los ids separados por coma
+     * @param lista lista de números de tipo long creada por el tracker y que va modificando conforme se seleccionan o deseleccionan
+     * elementos
+     */
     private fun cancelaCitas(citasListaString: String, lista : List<Long>) {
         CoroutineScope(Dispatchers.Main).launch {
             val resultado = ApiRestAdapter.cancelarCitas(citasListaString).await()
@@ -256,6 +292,13 @@ class FragmentReservas : Fragment(), View.OnClickListener {
         }
     }
 
+    /**
+     * Actualiza el listado de citas confirmadas según el rol del usuario, y a su vez actualiza el adaptador
+     *
+     * @param fechaInicio fecha inicio del periodo
+     * @param fechaFin fecha fin del periodo
+     * @param idUsuario id del usuario
+     */
     fun refrescaListaCitas(fechaInicio: String, fechaFin: String, idUsuario: Int) {
         var job: ArrayList<Cita>
         CoroutineScope(Dispatchers.Main).launch {
@@ -282,6 +325,12 @@ class FragmentReservas : Fragment(), View.OnClickListener {
         }
     }
 
+    /**
+     * Muestra el snackbar si no hay citas confirmadas en ese periodo
+     *
+     * @param fechaInicio fecha inicio del periodo
+     * @param fechaFin fecha fin del periodo
+     */
     private fun muestraSnackBarCitas(fechaInicio: String, fechaFin: String) {
         val periodoCadenaSnackbar: String = if (fechaInicio == fechaFin) "día" else "periodo"
         Snackbar.make(
@@ -291,6 +340,11 @@ class FragmentReservas : Fragment(), View.OnClickListener {
         ).show()
     }
 
+    /**
+     * Actualiza el adaptador con los nuevos datos
+     *
+     * @param datos nuevo array de datos para el adaptador
+     */
     fun updateRecyclerData(citas: ArrayList<Cita>) {
         adaptador.setData(citas)
         adaptador.notifyDataSetChanged()

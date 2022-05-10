@@ -24,7 +24,9 @@ import kotlinx.coroutines.launch
 import java.util.concurrent.TimeUnit
 import kotlin.NoSuchElementException
 
-
+/**
+ * Fragmento para el registro del usuario
+ */
 class FragmentRegistrar : Fragment(), View.OnClickListener {
 
     private lateinit var actividadPrincipal: MainActivity
@@ -40,9 +42,25 @@ class FragmentRegistrar : Fragment(), View.OnClickListener {
 
         actividadPrincipal = (requireActivity() as MainActivity)
 
+        /**
+         * Deshabilita el menú drawer para que no sea accesible desde este fragmento
+         */
         actividadPrincipal.disableDrawer()
+
+        /**
+         * Informa que este fragmento va a editar las opciones del menú overflow
+         */
         setHasOptionsMenu(true)
 
+        /**
+         * Programación reactiva:
+         * Detecta cuando el usuario está escribiendo en los campos.
+         * Ignora todos los eventos de cambio de texto que ocurren dentro de un corto espacio de tiempo, ya que esto indica que el
+         * usuario todavía está escribiendo.
+         * Realiza una acción cuando el usuario deje de escribir.
+         *
+         * @author https://code.tutsplus.com/es/tutorials/kotlin-reactive-programming-for-an-android-sign-up-screen--cms-31585
+         */
         respondeEventoCambioTextoEmail()
         respondeEventoCambioTextoPasswordConfirmacion()
         respondeEventoCambioTextoNombre()
@@ -56,6 +74,10 @@ class FragmentRegistrar : Fragment(), View.OnClickListener {
 
         binding.registrar.isEnabled = false
 
+        /**
+         * Controla los cambios en los EditText para no dejar ningún campo vacío.
+         * Además controla también el estado del botón registrar según sea la comprobación de los datos
+         */
         val textWatcher: TextWatcher = object : TextWatcher {
             override fun beforeTextChanged(charSequence: CharSequence, i: Int, i2: Int, i3: Int) {}
             override fun onTextChanged(charSequence: CharSequence, i: Int, i2: Int, i3: Int) {
@@ -76,6 +98,9 @@ class FragmentRegistrar : Fragment(), View.OnClickListener {
         return binding.root
     }
 
+    /**
+     * Responde a eventos de cambio de texto en el campo de confirmación de password
+     */
     private fun respondeEventoCambioTextoPasswordConfirmacion() {
         RxTextView.afterTextChangeEvents(binding.confirmarPasswordText)
             .skipInitialValue()
@@ -92,6 +117,9 @@ class FragmentRegistrar : Fragment(), View.OnClickListener {
             .subscribe()
     }
 
+    /**
+     * Responde a eventos de cambio de texto en el campo email
+     */
     private fun respondeEventoCambioTextoEmail() {
         RxTextView.afterTextChangeEvents(binding.mailText)
             .skipInitialValue()
@@ -111,6 +139,9 @@ class FragmentRegistrar : Fragment(), View.OnClickListener {
             .subscribe()
     }
 
+    /**
+     * Responde a eventos de cambio de texto en el campo nombre
+     */
     private fun respondeEventoCambioTextoNombre() {
         RxTextView.afterTextChangeEvents(binding.nombreText)
             .skipInitialValue()
@@ -129,6 +160,9 @@ class FragmentRegistrar : Fragment(), View.OnClickListener {
             .subscribe()
     }
 
+    /**
+     * Responde a eventos de cambio de texto en el campo apellidos
+     */
     private fun respondeEventoCambioTextoApellidos() {
         RxTextView.afterTextChangeEvents(binding.apellidosText)
             .skipInitialValue()
@@ -147,6 +181,9 @@ class FragmentRegistrar : Fragment(), View.OnClickListener {
             .subscribe()
     }
 
+    /**
+     * Responde a eventos de cambio de texto en el campo nombre de usuario
+     */
     private fun respondeEventoCambioTextoUserName() {
         RxTextView.afterTextChangeEvents(binding.userNameText)
             .skipInitialValue()
@@ -165,6 +202,9 @@ class FragmentRegistrar : Fragment(), View.OnClickListener {
             .subscribe()
     }
 
+    /**
+     * Responde a eventos de cambio de texto en el campo telefono
+     */
     private fun respondeEventoCambioTextoTelefono() {
         RxTextView.afterTextChangeEvents(binding.phoneText)
             .skipInitialValue()
@@ -183,6 +223,9 @@ class FragmentRegistrar : Fragment(), View.OnClickListener {
             .subscribe()
     }
 
+    /**
+     * Responde a eventos de cambio de texto en el campo password
+     */
     private fun respondeEventoCambioTextoPassword() {
         RxTextView.afterTextChangeEvents(binding.passwordText)
             .skipInitialValue()
@@ -201,6 +244,9 @@ class FragmentRegistrar : Fragment(), View.OnClickListener {
             .subscribe()
     }
 
+    /**
+     * Función de transformación cuya funcion es que en caso de que surje un error, continúe con la secuencia
+     */
     private inline fun retryWhenError(crossinline onError: (ex: Throwable) -> Unit): ObservableTransformer<String, String> =
         ObservableTransformer { observable ->
             observable.retryWhen { errors ->
@@ -211,6 +257,9 @@ class FragmentRegistrar : Fragment(), View.OnClickListener {
             }
         }
 
+    /**
+     * Se usa para validar que el email tenga el formato correcto, y en caso contrario mostrar el mensaje de error
+     */
     private val validateEmailAddress = ObservableTransformer<String, String> { observable ->
         observable.flatMap {
             Observable.just(it).map { it.trim() }
@@ -229,6 +278,9 @@ class FragmentRegistrar : Fragment(), View.OnClickListener {
         }
     }
 
+    /**
+     * Se usa para validar que ambas contraseñas son iguales, y en caso contrario mostrar el mensaje de error
+     */
     private val validatePassword = ObservableTransformer<String, String> { observable ->
         observable.flatMap {
             Observable.just(it).map { it.trim() }
@@ -245,6 +297,10 @@ class FragmentRegistrar : Fragment(), View.OnClickListener {
         }
     }
 
+    /**
+     * Se usa para comprobar la longitud de los datos introducidos. En este caso sirve para corroborar
+     * que no están vacíos, y en caso contrario mostrar el mensaje de error
+     */
     private val validateFieldsLength = ObservableTransformer<String, String> { observable ->
         observable.flatMap {
             Observable.just(it).map { it.trim() }
@@ -262,6 +318,10 @@ class FragmentRegistrar : Fragment(), View.OnClickListener {
         }
     }
 
+
+    /**
+     * Comprueba los campos introducidos. Se usará para gestionar que el botón registrar esté o no habilitado.
+     */
     fun comprobarDatos(): Boolean {
         return !(binding.nombreText.text.isNullOrEmpty() || binding.apellidosText.text.isNullOrEmpty() || binding.userNameText.text.isNullOrEmpty()
                 || binding.passwordText.text.isNullOrEmpty() || binding.mailText.text.isNullOrEmpty() || binding.phoneText.text.isNullOrEmpty() ||
@@ -269,6 +329,9 @@ class FragmentRegistrar : Fragment(), View.OnClickListener {
             .equals(binding.confirmarPasswordText.text.toString()))
     }
 
+    /**
+     * Deshabilita la función de logout del menu overflow
+     */
     override fun onPrepareOptionsMenu(menu: Menu) {
         super.onPrepareOptionsMenu(menu)
         val item: MenuItem = menu.findItem(R.id.logout)
@@ -305,6 +368,11 @@ class FragmentRegistrar : Fragment(), View.OnClickListener {
         }
     }
 
+    /**
+     * Registra al usuario, y si el resultado es correcto, habilita el menú drawer de nuevo
+     *
+     * @param usuario usuario a registrar
+     */
     fun registraUsuario(usuario: Usuario) {
 
         val contexto = this

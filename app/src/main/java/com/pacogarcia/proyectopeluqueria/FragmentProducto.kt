@@ -24,8 +24,10 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-
-class FragmentTipoProducto : Fragment(), View.OnClickListener, AdapterView.OnItemSelectedListener {
+/**
+ * Fragmento para la gestión de cada producto
+ */
+class FragmentProducto : Fragment(), View.OnClickListener, AdapterView.OnItemSelectedListener {
 
     var posicion = 0
     var swipeDetector: SwipeDetector = SwipeDetector()
@@ -56,6 +58,10 @@ class FragmentTipoProducto : Fragment(), View.OnClickListener, AdapterView.OnIte
         val nombreGrupo = args.getString("nombreGrupo")
         val posicion = args.getInt("posicion")
 
+        /**
+         * Gestiona la carga. Si recibe como argumento el nombre del grupo, carga los productos.
+         * En caso contrario, muestra el producto desde el listado resultado de la búsqueda, rescatándolo por la posición
+         */
         if (!nombreGrupo.isNullOrEmpty()) {
             cargarProductoPorGrupo(nombreGrupo)
         } else {
@@ -71,6 +77,10 @@ class FragmentTipoProducto : Fragment(), View.OnClickListener, AdapterView.OnIte
         return viewLayout
     }
 
+    /**
+     * Respecto el swipedetector, controla si viene desde la página de ListaProductos comprobando si 'model.query' tiene datos.
+     * Si es así, no incorpora el deslizamiento
+     */
     override fun onClick(p0: View?) {
 
         if (p0?.id == R.id.fabHome) {
@@ -109,16 +119,29 @@ class FragmentTipoProducto : Fragment(), View.OnClickListener, AdapterView.OnIte
         }
     }
 
+    /**
+     * Obtiene el producto desde la lista de productos por grupo, y lo establece en el layout
+     */
     fun seleccionaProducto() {
         val producto = model.getProductosPorGrupo().value?.get(posicion)
         setProducto(producto)
     }
 
+    /**
+     * Obtiene el producto desde la lista resultante de la búsqueda, y lo establece en el layout
+     *
+     * @param posicion posición del producto en la lista
+     */
     fun seleccionaProductoPorBusqueda(posicion: Int) {
         val producto = model.getProductosPorBusqueda().value?.get(posicion)
         setProducto(producto)
     }
 
+    /**
+     * Establece los datos del producto en la vista, incluyendo el spinner con las cantidades del stock
+     *
+     * @param producto producto a settear
+     */
     private fun setProducto(producto: Producto?) {
 
         viewLayout.findViewById<TextView>(R.id.nombreProducto).text = producto?.nombre
@@ -130,6 +153,11 @@ class FragmentTipoProducto : Fragment(), View.OnClickListener, AdapterView.OnIte
         setSpinner(producto)
     }
 
+    /**
+     * Carga todos los productos por grupo y después establece el primero en la vista
+     *
+     * @param grupo nombre del grupo de productos
+     */
     fun cargarProductoPorGrupo(grupo: String) {
         CoroutineScope(Dispatchers.Main).launch {
             val job = ApiRestAdapter.cargarProductoPorGrupo(grupo).await()
@@ -139,6 +167,11 @@ class FragmentTipoProducto : Fragment(), View.OnClickListener, AdapterView.OnIte
         }
     }
 
+    /**
+     * Establece el spinner con los datos del stock de cada producto
+     *
+     * @param producto producto del que se obtiene el stock
+     */
     private fun setSpinner(producto: Producto?) {
 
         val spinner = viewLayout.findViewById<Spinner>(R.id.cantidadSpinner)
@@ -156,6 +189,12 @@ class FragmentTipoProducto : Fragment(), View.OnClickListener, AdapterView.OnIte
     }
 
 
+    /**
+     * Llena un array numérico con el stock, desde 1 hasta el máximo de stock disponible
+     *
+     * @param cantidad stock en forma de entero
+     * @return array con el stock
+     */
     fun llenaArrayCantidadStock(cantidad : Int) : Array<Int?>{
         val lista = ArrayList<Int>()
         for(i in 1..cantidad){

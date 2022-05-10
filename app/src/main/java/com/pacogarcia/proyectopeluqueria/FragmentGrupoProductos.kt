@@ -15,15 +15,18 @@ import androidx.navigation.fragment.NavHostFragment
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.pacogarcia.proyectopeluqueria.clasesrecycler.AdaptadorProductoGrupos
-import com.pacogarcia.proyectopeluqueria.databinding.FragmentProductosBinding
+import com.pacogarcia.proyectopeluqueria.databinding.FragmentGrupoProductosBinding
 import com.pacogarcia.proyectopeluqueria.modelos.Producto
 import com.pacogarcia.proyectopeluqueria.modelos.ProductoGrupo
 import com.pacogarcia.proyectopeluqueria.viewmodel.ItemViewModel
 import kotlinx.coroutines.*
 
-class FragmentProductos : Fragment(), View.OnClickListener {
+/**
+ * Fragmento para la gestión del listado de grupos de productos
+ */
+class FragmentGrupoProductos : Fragment(), View.OnClickListener {
 
-    private lateinit var binding: FragmentProductosBinding
+    private lateinit var binding: FragmentGrupoProductosBinding
     private lateinit var adaptador: AdaptadorProductoGrupos
     private lateinit var recycler: RecyclerView
     private lateinit var navController: NavController
@@ -36,7 +39,7 @@ class FragmentProductos : Fragment(), View.OnClickListener {
     ): View? {
         super.onCreateView(inflater, container, savedInstanceState)
 
-        binding = FragmentProductosBinding.inflate(inflater, container, false)
+        binding = FragmentGrupoProductosBinding.inflate(inflater, container, false)
 
         recycler = binding.recyclerListProductoGrupo
 
@@ -49,16 +52,24 @@ class FragmentProductos : Fragment(), View.OnClickListener {
         model.query = ""
         navController = NavHostFragment.findNavController(this)
 
+
+        /**
+         * Controla la vuelta al fragmento mediante backpressed. Si no está cargado el listado de grupos de productos,
+         * los carga desde el API.
+         * En caso contrario, carga el adaptador con los datos que existen en el listado.
+         */
         if (!MainActivity.productoGruposCargados) {
             cargarProductoGrupos()
         } else {
             iniciaAdaptadorRecycler(MainActivity.productoGrupos!!)
         }
 
-
+        /**
+         * Listener para la barra de búsqueda
+         */
         binding.searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String): Boolean {
-                val listaNueva : ArrayList<Producto> = ArrayList()
+                val listaNueva: ArrayList<Producto> = ArrayList()
                 model.setProductosPorBusqueda(listaNueva)
                 model.query = query
                 navController.navigate(R.id.action_global_fragmentListaProductos)
@@ -76,6 +87,9 @@ class FragmentProductos : Fragment(), View.OnClickListener {
     }
 
 
+    /**
+     * Obtiene los grupos de productos e inicia el recycler
+     */
     fun getProductoGrupos() {
         CoroutineScope(Dispatchers.Main).launch {
             val job = ApiRestAdapter.cargarProductoGrupos().await()
@@ -86,6 +100,10 @@ class FragmentProductos : Fragment(), View.OnClickListener {
         }
     }
 
+    /**
+     * Envía mediante bundle el nombre del grupo al FragmentProducto
+     * Al hacer click en el producto de la lista, navega hacía su propia página con todos los datos
+     */
     override fun onClick(p0: View?) {
 
         posicion = recycler.getChildAdapterPosition(p0!!)
@@ -97,6 +115,11 @@ class FragmentProductos : Fragment(), View.OnClickListener {
         navController.navigate(R.id.action_fragmentProductos_to_fragmentTipoProducto, bundle)
     }
 
+    /**
+     * Inicia el adaptador y el recycler
+     *
+     * @param datos array de datos para el adaptador
+     */
     fun iniciaAdaptadorRecycler(datos: ArrayList<ProductoGrupo>) {
 
         adaptador = AdaptadorProductoGrupos(datos, requireContext())
@@ -117,6 +140,10 @@ class FragmentProductos : Fragment(), View.OnClickListener {
 
     }
 
+    /**
+     * Obtiene los grupos de productos e inicia el recycler. Muestra además
+     * un ProgressDialog mientra carga los grupos
+     */
     //TODO - ¿PONER BARRA PROGRESO? DESCOMENTAR O COMENTAR OPCIÓN EN onCreateView
     fun cargarProductoGrupos() {
         val deferred = lifecycleScope.async(Dispatchers.IO) {
@@ -169,7 +196,9 @@ class FragmentProductos : Fragment(), View.OnClickListener {
         }
     }
 
-
+    /**
+     * Controla el cambio de orientación para modificar la cantidad de elementos que se muestran en el grid layout
+     */
     override fun onConfigurationChanged(newConfig: Configuration) {
 
         if (newConfig != null) {
