@@ -9,11 +9,13 @@ import android.view.ViewGroup
 import android.widget.SearchView
 import android.widget.Toast
 import androidx.fragment.app.activityViewModels
+import androidx.fragment.app.setFragmentResultListener
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.snackbar.Snackbar
 import com.pacogarcia.proyectopeluqueria.clasesrecycler.AdaptadorListaProductos
 import com.pacogarcia.proyectopeluqueria.databinding.FragmentListaProductosBusquedaBinding
 import com.pacogarcia.proyectopeluqueria.modelos.Producto
@@ -33,6 +35,21 @@ class FragmentListaProductosBusqueda : Fragment(), View.OnClickListener {
     private lateinit var navController: NavController
     private val model: ItemViewModel by activityViewModels()
     var posicion = 0
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        setFragmentResultListener("busquedaKey") { requestKey, bundle ->
+            // We use a String here, but any type that can be put in a Bundle is supported
+            val result = bundle.getBoolean("bundleBusqueda")
+            // Do something with the result
+            if(result){
+                val producto = model.getProductosPorBusqueda().value!!.get(model.posicionProductoBusqueda)
+                producto.stock = producto.stock?.minus(1)
+                adaptador.notifyItemChanged(model.posicionProductoBusqueda)
+            }
+        }
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,

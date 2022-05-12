@@ -196,6 +196,9 @@ class MainActivity : AppCompatActivity(),
         }
     }
 
+    /**
+     * Acciones que se realizan si se hace click en el botón aceptar del diálogo de confirmación
+     */
     override fun onDialogPositiveClick(dialog: DialogFragment) {
 
         when (opcionOverflow) {

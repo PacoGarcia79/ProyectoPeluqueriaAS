@@ -53,7 +53,7 @@
             android:textSize="25sp"
             app:layout_constraintStart_toEndOf="@id/fotoProducto"
             android:layout_marginStart="10dp"
-            android:layout_marginTop="32dp"
+            android:layout_marginTop="10dp"
             app:layout_constraintTop_toBottomOf="@id/nombreProducto" />
 
         <TextView
@@ -76,6 +76,17 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             android:scaleType="fitXY"/>
+
+        <TextView
+            android:id="@+id/stockProducto"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/unidades_en_stock"
+            android:layout_marginTop="12dp"
+            android:textSize="12sp"
+            app:layout_constraintStart_toEndOf="@id/fotoProducto"
+            android:layout_marginStart="10dp"
+            app:layout_constraintTop_toBottomOf="@id/descripcionProducto" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 </com.google.android.material.card.MaterialCardView>
 

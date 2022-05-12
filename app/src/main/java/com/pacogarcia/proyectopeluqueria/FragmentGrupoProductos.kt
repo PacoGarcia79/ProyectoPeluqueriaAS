@@ -16,6 +16,7 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.pacogarcia.proyectopeluqueria.clasesrecycler.AdaptadorProductoGrupos
 import com.pacogarcia.proyectopeluqueria.databinding.FragmentGrupoProductosBinding
+import com.pacogarcia.proyectopeluqueria.dialogos.ProgressDialogo
 import com.pacogarcia.proyectopeluqueria.modelos.Producto
 import com.pacogarcia.proyectopeluqueria.modelos.ProductoGrupo
 import com.pacogarcia.proyectopeluqueria.viewmodel.ItemViewModel
@@ -142,9 +143,8 @@ class FragmentGrupoProductos : Fragment(), View.OnClickListener {
 
     /**
      * Obtiene los grupos de productos e inicia el recycler. Muestra además
-     * un ProgressDialog mientra carga los grupos
+     * un ProgressDialogo mientra carga los grupos
      */
-    //TODO - ¿PONER BARRA PROGRESO? DESCOMENTAR O COMENTAR OPCIÓN EN onCreateView
     fun cargarProductoGrupos() {
         val deferred = lifecycleScope.async(Dispatchers.IO) {
             ApiRestAdapter.cargarProductoGrupos().await()
@@ -158,17 +158,12 @@ class FragmentGrupoProductos : Fragment(), View.OnClickListener {
             if (deferred.isActive) {
 
                 // show loading dialog to user if the task is taking time
-                val progressDialogBuilder = ProgressDialog.show(
-                    requireContext(), "Productos",
-                    "Cargando...", true
-                )
+                val dialog = ProgressDialogo.progressDialog(requireContext())
 
-                //val alert = ProgressDialog()
 
 
                 try {
-                    progressDialogBuilder.show()
-                    //alert.showResetPasswordDialog(activity)
+                    dialog.show()
 
                     // suspend the coroutine till deferred finishes its task
                     // on completion, deferred result will be posted to the
@@ -181,8 +176,7 @@ class FragmentGrupoProductos : Fragment(), View.OnClickListener {
                 } finally {
                     // when deferred finishes and exits try block finally
                     // will be invoked and we can cancel the progress dialog
-                    progressDialogBuilder.cancel()
-                    //alert.dismiss()
+                    dialog.dismiss()
 
                 }
             } else {

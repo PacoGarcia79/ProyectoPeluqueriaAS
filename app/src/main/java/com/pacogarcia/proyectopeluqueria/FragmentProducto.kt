@@ -2,24 +2,22 @@ package com.pacogarcia.proyectopeluqueria
 
 import android.content.res.Configuration
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
-import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.fragment.app.setFragmentResultListener
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
-import androidx.recyclerview.widget.GridLayoutManager
-import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.floatingactionbutton.FloatingActionButton
+import com.google.android.material.snackbar.Snackbar
 import com.pacogarcia.proyectopeluqueria.clasesestaticas.ImagenUtilidad
-import com.pacogarcia.proyectopeluqueria.databinding.FragmentTipoProductoBinding
 import com.pacogarcia.proyectopeluqueria.modelos.Producto
 import com.pacogarcia.proyectopeluqueria.viewmodel.ItemViewModel
-import com.squareup.picasso.Picasso
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -37,7 +35,25 @@ class FragmentProducto : Fragment(), View.OnClickListener, AdapterView.OnItemSel
 
     private lateinit var viewLayout : View
 
+    private var producto: Producto? = Producto()
+    private var productoBusqueda: Producto? = Producto()
+
     var cantidadSeleccionada = 1
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        setFragmentResultListener("requestKey") { requestKey, bundle ->
+            // We use a String here, but any type that can be put in a Bundle is supported
+            val result = bundle.getBoolean("bundleKey")
+            // Do something with the result
+            if(result){
+                setSpinner(producto?.stock!! - cantidadSeleccionada)
+            }
+
+        }
+
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -123,7 +139,7 @@ class FragmentProducto : Fragment(), View.OnClickListener, AdapterView.OnItemSel
      * Obtiene el producto desde la lista de productos por grupo, y lo establece en el layout
      */
     fun seleccionaProducto() {
-        val producto = model.getProductosPorGrupo().value?.get(posicion)
+        producto = model.getProductosPorGrupo().value?.get(posicion)
         setProducto(producto)
     }
 
@@ -133,7 +149,7 @@ class FragmentProducto : Fragment(), View.OnClickListener, AdapterView.OnItemSel
      * @param posicion posición del producto en la lista
      */
     fun seleccionaProductoPorBusqueda(posicion: Int) {
-        val producto = model.getProductosPorBusqueda().value?.get(posicion)
+        productoBusqueda = model.getProductosPorBusqueda().value?.get(posicion)
         setProducto(producto)
     }
 
@@ -150,7 +166,7 @@ class FragmentProducto : Fragment(), View.OnClickListener, AdapterView.OnItemSel
 
         viewLayout.findViewById<ImageView>(R.id.fotoProducto).setImageBitmap(ImagenUtilidad.convertirStringBitmap(producto?.foto))
 
-        setSpinner(producto)
+        setSpinner(producto?.stock)
     }
 
     /**
@@ -172,10 +188,9 @@ class FragmentProducto : Fragment(), View.OnClickListener, AdapterView.OnItemSel
      *
      * @param producto producto del que se obtiene el stock
      */
-    private fun setSpinner(producto: Producto?) {
+    private fun setSpinner(cantidadStock: Int?) {
 
         val spinner = viewLayout.findViewById<Spinner>(R.id.cantidadSpinner)
-        val cantidadStock = producto?.stock
         val listaNumeros = llenaArrayCantidadStock(cantidadStock!!)
         val adapter = ArrayAdapter(
             requireContext(),
@@ -234,4 +249,3 @@ class FragmentProducto : Fragment(), View.OnClickListener, AdapterView.OnItemSel
     }
 
 }
-

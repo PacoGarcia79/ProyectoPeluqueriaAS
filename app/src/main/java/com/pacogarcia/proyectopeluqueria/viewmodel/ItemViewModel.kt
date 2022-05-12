@@ -25,6 +25,7 @@ class ItemViewModel : ViewModel() {
 
     var query: String = ""
     var rol: Roles? = null
+    var posicionProductoBusqueda = 0
 
     fun setUsuario(item: Usuario) {
         liveData.value = item

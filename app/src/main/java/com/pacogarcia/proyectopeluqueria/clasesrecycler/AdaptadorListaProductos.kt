@@ -44,4 +44,6 @@ class AdaptadorListaProductos (var datos: ArrayList<Producto>, val contexto: Con
         datos = nuevaLista
     }
 
+
+
 }

@@ -75,4 +75,6 @@
     <string name="selecciona_cliente">Selecciona cliente</string>
     <string name="reservar">Reservar</string>
     <string name="_10_00">10:00</string>
+    <string name="unidades_en_stock">unidades en stock</string>
+    <string name="cargando">Cargando...</string>
 </resources>
