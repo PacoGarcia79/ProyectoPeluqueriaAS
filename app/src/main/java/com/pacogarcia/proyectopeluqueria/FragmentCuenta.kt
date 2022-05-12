@@ -29,17 +29,17 @@ import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.lifecycle.lifecycleScope
 import com.jakewharton.rxbinding2.widget.RxTextView
 import com.pacogarcia.proyectopeluqueria.clasesestaticas.Hash
 import com.pacogarcia.proyectopeluqueria.clasesestaticas.ImagenUtilidad
+import com.pacogarcia.proyectopeluqueria.dialogos.ProgressDialogo
 import com.pacogarcia.proyectopeluqueria.modelos.Usuario
 import io.reactivex.Observable
 import io.reactivex.ObservableTransformer
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import java.util.concurrent.TimeUnit
 
 /**
@@ -476,7 +476,6 @@ class FragmentCuenta : Fragment(), View.OnClickListener {
             }
         }
     }
-
 
     /**
      * Responde a eventos de cambio de texto en el campo de confirmación de password

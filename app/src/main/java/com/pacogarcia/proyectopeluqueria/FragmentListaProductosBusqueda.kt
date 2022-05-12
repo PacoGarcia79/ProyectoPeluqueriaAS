@@ -10,6 +10,7 @@ import android.widget.SearchView
 import android.widget.Toast
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.setFragmentResultListener
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.recyclerview.widget.GridLayoutManager
@@ -18,11 +19,10 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.snackbar.Snackbar
 import com.pacogarcia.proyectopeluqueria.clasesrecycler.AdaptadorListaProductos
 import com.pacogarcia.proyectopeluqueria.databinding.FragmentListaProductosBusquedaBinding
+import com.pacogarcia.proyectopeluqueria.dialogos.ProgressDialogo
 import com.pacogarcia.proyectopeluqueria.modelos.Producto
 import com.pacogarcia.proyectopeluqueria.viewmodel.ItemViewModel
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 
 /**
  * Fragmento para la gestión del listado de productos resultante de la búsqueda
@@ -36,6 +36,13 @@ class FragmentListaProductosBusqueda : Fragment(), View.OnClickListener {
     private val model: ItemViewModel by activityViewModels()
     var posicion = 0
 
+    /**
+     * setFragmentResultListener se usa para pasar resultado entre fragmentos. En este caso espero el resultado del
+     * DialogoAddProductoCita, en concreto si la adición del producto se ha producido. Si es así, disminuyo una cantidad del
+     * stock del producto de interés y notifico al adaptador el cambio en ese producto.
+     * Uso la propiedad posicionProductoBusqueda del viewModel para no perder la referencia al volver a este fragmento desde
+     * el Diálogo.
+     */
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -79,20 +86,83 @@ class FragmentListaProductosBusqueda : Fragment(), View.OnClickListener {
         /**
          * Listener para la barra de búsqueda
          */
+//        binding.searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+//            override fun onQueryTextSubmit(query: String): Boolean {
+//                val listaNueva : ArrayList<Producto> = ArrayList()
+//                model.setProductosPorBusqueda(listaNueva)
+//                model.query = query
+//                CoroutineScope(Dispatchers.Main).launch {
+//                    val job = ApiRestAdapter.cargarProductosSearch(query).await()
+//                    model.setProductosPorBusqueda(job)
+//
+//                    if(model.getProductosPorBusqueda().value!!.size == 0){
+//                        Toast.makeText(requireContext(), "No hay resultados", Toast.LENGTH_LONG).show()
+//                    }
+//
+//                    updateRecyclerData(model.getProductosPorBusqueda().value!!)
+//                }
+//
+//                return false
+//            }
+//
+//            override fun onQueryTextChange(newText: String): Boolean {
+//                return false
+//            }
+//        })
+
         binding.searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String): Boolean {
                 val listaNueva : ArrayList<Producto> = ArrayList()
                 model.setProductosPorBusqueda(listaNueva)
                 model.query = query
-                CoroutineScope(Dispatchers.Main).launch {
-                    val job = ApiRestAdapter.cargarProductosSearch(query).await()
-                    model.setProductosPorBusqueda(job)
 
-                    if(model.getProductosPorBusqueda().value!!.size == 0){
-                        Toast.makeText(requireContext(), "No hay resultados", Toast.LENGTH_LONG).show()
+                val deferred = lifecycleScope.async(Dispatchers.IO) {
+                    ApiRestAdapter.cargarProductosSearch(query).await()
+                }
+
+                lifecycleScope.launch(Dispatchers.Main) {
+                    // delay showing the progress dialog for whatever time you want
+                    delay(300)
+
+                    // check if the task is still active
+                    if (deferred.isActive) {
+
+                        // show loading dialog to user if the task is taking time
+                        val dialog = ProgressDialogo.progressDialog(requireContext())
+
+                        try {
+                            dialog.show()
+
+                            // suspend the coroutine till deferred finishes its task
+                            // on completion, deferred result will be posted to the
+                            // function and try block will be exited.
+                            val result = deferred.await()
+                            model.setProductosPorBusqueda(result)
+
+                            if(model.getProductosPorBusqueda().value!!.size == 0){
+                                Toast.makeText(requireContext(), "No hay resultados", Toast.LENGTH_LONG).show()
+                            }
+
+                            updateRecyclerData(model.getProductosPorBusqueda().value!!)
+
+                        } finally {
+                            // when deferred finishes and exits try block finally
+                            // will be invoked and we can cancel the progress dialog
+                            dialog.dismiss()
+
+                        }
+                    } else {
+                        // if deferred completed already withing the wait time, skip
+                        // showing the progress dialog and post the deferred result
+                        val result = deferred.await()
+                        model.setProductosPorBusqueda(result)
+
+                        if(model.getProductosPorBusqueda().value!!.size == 0){
+                            Toast.makeText(requireContext(), "No hay resultados", Toast.LENGTH_LONG).show()
+                        }
+
+                        updateRecyclerData(model.getProductosPorBusqueda().value!!)
                     }
-
-                    updateRecyclerData(model.getProductosPorBusqueda().value!!)
                 }
 
                 return false
@@ -111,16 +181,68 @@ class FragmentListaProductosBusqueda : Fragment(), View.OnClickListener {
      *
      * @param query cadena para la búsqueda
      */
+//    fun getProductosSearch(query: String) {
+//        CoroutineScope(Dispatchers.Main).launch {
+//            val job = ApiRestAdapter.cargarProductosSearch(query).await()
+//            model.setProductosPorBusqueda(job)
+//
+//            if(model.getProductosPorBusqueda().value!!.size == 0){
+//                Toast.makeText(requireContext(), "No hay resultados", Toast.LENGTH_LONG).show()
+//            }
+//
+//            iniciaAdaptadorRecycler(model.getProductosPorBusqueda().value!!)
+//        }
+//    }
+
+
     fun getProductosSearch(query: String) {
-        CoroutineScope(Dispatchers.Main).launch {
-            val job = ApiRestAdapter.cargarProductosSearch(query).await()
-            model.setProductosPorBusqueda(job)
+        val deferred = lifecycleScope.async(Dispatchers.IO) {
+            ApiRestAdapter.cargarProductosSearch(query).await()
+        }
 
-            if(model.getProductosPorBusqueda().value!!.size == 0){
-                Toast.makeText(requireContext(), "No hay resultados", Toast.LENGTH_LONG).show()
+        lifecycleScope.launch(Dispatchers.Main) {
+            // delay showing the progress dialog for whatever time you want
+            delay(300)
+
+            // check if the task is still active
+            if (deferred.isActive) {
+
+                // show loading dialog to user if the task is taking time
+                val dialog = ProgressDialogo.progressDialog(requireContext())
+
+                try {
+                    dialog.show()
+
+                    // suspend the coroutine till deferred finishes its task
+                    // on completion, deferred result will be posted to the
+                    // function and try block will be exited.
+                    val result = deferred.await()
+                    model.setProductosPorBusqueda(result)
+
+                    if(model.getProductosPorBusqueda().value!!.size == 0){
+                        Toast.makeText(requireContext(), "No hay resultados", Toast.LENGTH_LONG).show()
+                    }
+
+                    iniciaAdaptadorRecycler(model.getProductosPorBusqueda().value!!)
+
+                } finally {
+                    // when deferred finishes and exits try block finally
+                    // will be invoked and we can cancel the progress dialog
+                    dialog.dismiss()
+
+                }
+            } else {
+                // if deferred completed already withing the wait time, skip
+                // showing the progress dialog and post the deferred result
+                val result = deferred.await()
+                model.setProductosPorBusqueda(result)
+
+                if(model.getProductosPorBusqueda().value!!.size == 0){
+                    Toast.makeText(requireContext(), "No hay resultados", Toast.LENGTH_LONG).show()
+                }
+
+                iniciaAdaptadorRecycler(model.getProductosPorBusqueda().value!!)
             }
-
-            iniciaAdaptadorRecycler(model.getProductosPorBusqueda().value!!)
         }
     }
 

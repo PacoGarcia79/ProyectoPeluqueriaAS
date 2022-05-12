@@ -143,7 +143,7 @@ class FragmentGrupoProductos : Fragment(), View.OnClickListener {
 
     /**
      * Obtiene los grupos de productos e inicia el recycler. Muestra además
-     * un ProgressDialogo mientra carga los grupos
+     * un Progress Dialogo mientra carga los grupos
      */
     fun cargarProductoGrupos() {
         val deferred = lifecycleScope.async(Dispatchers.IO) {
@@ -159,8 +159,6 @@ class FragmentGrupoProductos : Fragment(), View.OnClickListener {
 
                 // show loading dialog to user if the task is taking time
                 val dialog = ProgressDialogo.progressDialog(requireContext())
-
-
 
                 try {
                     dialog.show()

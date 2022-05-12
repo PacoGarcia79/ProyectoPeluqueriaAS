@@ -11,16 +11,16 @@ import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.setFragmentResultListener
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.snackbar.Snackbar
 import com.pacogarcia.proyectopeluqueria.clasesestaticas.ImagenUtilidad
+import com.pacogarcia.proyectopeluqueria.dialogos.ProgressDialogo
 import com.pacogarcia.proyectopeluqueria.modelos.Producto
 import com.pacogarcia.proyectopeluqueria.viewmodel.ItemViewModel
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 
 /**
  * Fragmento para la gestión de cada producto
@@ -40,6 +40,11 @@ class FragmentProducto : Fragment(), View.OnClickListener, AdapterView.OnItemSel
 
     var cantidadSeleccionada = 1
 
+    /**
+     * setFragmentResultListener se usa para pasar resultado entre fragmentos. En este caso espero el resultado del
+     * DialogoAddProductoCita, en concreto si la adición del producto se ha producido. Si es así, disminuyo la cantidad añadida del
+     * del producto a su stock y setteo de nuevo el spinner con la nueva cantidad.
+     */
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -50,9 +55,7 @@ class FragmentProducto : Fragment(), View.OnClickListener, AdapterView.OnItemSel
             if(result){
                 setSpinner(producto?.stock!! - cantidadSeleccionada)
             }
-
         }
-
     }
 
     override fun onCreateView(
@@ -150,7 +153,7 @@ class FragmentProducto : Fragment(), View.OnClickListener, AdapterView.OnItemSel
      */
     fun seleccionaProductoPorBusqueda(posicion: Int) {
         productoBusqueda = model.getProductosPorBusqueda().value?.get(posicion)
-        setProducto(producto)
+        setProducto(productoBusqueda)
     }
 
     /**
@@ -174,12 +177,55 @@ class FragmentProducto : Fragment(), View.OnClickListener, AdapterView.OnItemSel
      *
      * @param grupo nombre del grupo de productos
      */
-    fun cargarProductoPorGrupo(grupo: String) {
-        CoroutineScope(Dispatchers.Main).launch {
-            val job = ApiRestAdapter.cargarProductoPorGrupo(grupo).await()
-            model.setProductosPorGrupo(job)
+//    fun cargarProductoPorGrupo(grupo: String) {
+//        CoroutineScope(Dispatchers.Main).launch {
+//            val job = ApiRestAdapter.cargarProductoPorGrupo(grupo).await()
+//            model.setProductosPorGrupo(job)
+//
+//            seleccionaProducto()
+//        }
+//    }
 
-            seleccionaProducto()
+    fun cargarProductoPorGrupo(grupo: String) {
+        val deferred = lifecycleScope.async(Dispatchers.IO) {
+            ApiRestAdapter.cargarProductoPorGrupo(grupo).await()
+        }
+
+        lifecycleScope.launch(Dispatchers.Main) {
+            // delay showing the progress dialog for whatever time you want
+            delay(300)
+
+            // check if the task is still active
+            if (deferred.isActive) {
+
+                // show loading dialog to user if the task is taking time
+                val dialog = ProgressDialogo.progressDialog(requireContext())
+
+                try {
+                    dialog.show()
+
+                    // suspend the coroutine till deferred finishes its task
+                    // on completion, deferred result will be posted to the
+                    // function and try block will be exited.
+                    val result = deferred.await()
+                    model.setProductosPorGrupo(result)
+
+                    seleccionaProducto()
+
+                } finally {
+                    // when deferred finishes and exits try block finally
+                    // will be invoked and we can cancel the progress dialog
+                    dialog.dismiss()
+
+                }
+            } else {
+                // if deferred completed already withing the wait time, skip
+                // showing the progress dialog and post the deferred result
+                val result = deferred.await()
+                model.setProductosPorGrupo(result)
+
+                seleccionaProducto()
+            }
         }
     }
 

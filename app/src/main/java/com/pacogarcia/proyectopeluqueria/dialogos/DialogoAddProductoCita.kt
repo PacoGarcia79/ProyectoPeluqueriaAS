@@ -180,9 +180,11 @@ class DialogoAddProductoCita : DialogFragment(), View.OnClickListener,
                     Toast.LENGTH_SHORT
                 ).show()
 
-//                val result = true
-//                // Use the Kotlin extension in the fragment-ktx artifact
-//                setFragmentResult("requestKey", bundleOf("bundleKey" to result))
+
+                /**
+                 * Uso setFragmentResult para pasar el resultado a los fragmentos que lo necesiten.
+                 * Se usa una request key y el bundle para pasar lo que se necesite
+                 */
 
                 val result = true
                 if(MainActivity.clickAddProductoCitaHolder){
