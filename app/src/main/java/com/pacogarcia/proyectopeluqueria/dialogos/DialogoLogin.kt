@@ -99,8 +99,7 @@ class DialogoLogin : DialogFragment(), View.OnClickListener {
     private fun autorizar(usuario: Usuario) {
         CoroutineScope(Dispatchers.Main).launch {
             val resultado = ApiRestAdapter.autorizaUsuario(
-                usuario,
-                requireContext()
+                usuario
             ).await()
 
             if (!resultado.usuario!!.isEmpty()) {

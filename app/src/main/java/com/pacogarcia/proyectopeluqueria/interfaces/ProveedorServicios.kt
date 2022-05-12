@@ -33,15 +33,6 @@ interface ProveedorServicios {
     // <editor-fold defaultstate="collapsed" desc=" Productos ">
 
     /**
-     * Este método se usa para obtener la lista de productos.
-     *
-     * @return Un ArrayList de Productos.
-     */
-    @GET("api/peluqueria/productos")
-    @Headers("Accept: application/json", "Content-Type: application/json")
-    suspend fun getProductos(@Header("Cookie") cookie: String): Response<ArrayList<Producto>>
-
-    /**
      * Este método se usa para obtener la lista de productos de una búsqueda.
      *
      * @param query Query de la búsqueda.
