@@ -3,7 +3,6 @@ package com.pacogarcia.proyectopeluqueria.dialogos
 import android.app.Dialog
 import android.os.Build
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import android.widget.*
 import androidx.annotation.RequiresApi

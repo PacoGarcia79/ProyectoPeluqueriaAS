@@ -1,11 +1,8 @@
 package com.pacogarcia.proyectopeluqueria
 
-import android.content.Context
 import com.pacogarcia.proyectopeluqueria.interfaces.ProveedorServicios
 import com.pacogarcia.proyectopeluqueria.modelos.*
 import kotlinx.coroutines.*
-import okhttp3.OkHttpClient
-import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
@@ -40,11 +37,11 @@ object ApiRestAdapter {
 
     /**
      * Este método se usa para la autentificación del usuario.
-     * @param usuario Objeto de tipo Usuario con los datos necesarios para el login.
+     * @param u Objeto de tipo Usuario con los datos necesarios para el login.
      * @return Un objeto de tipo MensajeLogin para evaluar el resultado de la petición
      */
     fun autorizaUsuario(
-        u: Usuario, context: Context
+        u: Usuario
     ): Deferred<MensajeLogin> {
         val proveedorServicios: ProveedorServicios = crearRetrofit()
         return CoroutineScope(Dispatchers.IO).async {
@@ -70,7 +67,6 @@ object ApiRestAdapter {
 
     /**
      * Este método se usa para el logout del usuario.
-     * @param usuario Objeto de tipo Usuario con los datos necesarios para el logout.
      * @return Un objeto de tipo MensajeLogout para evaluar el resultado de la petición
      */
     fun logout(): Deferred<MensajeLogout> {
@@ -245,29 +241,6 @@ object ApiRestAdapter {
     // </editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc=" Productos ">
-
-    /**
-     * Este método se usa para obtener la lista de productos.
-     *
-     * @return Un ArrayList de Productos.
-     */
-    fun cargarProductos(): Deferred<ArrayList<Producto>> {
-        val proveedorServicios: ProveedorServicios = crearRetrofit()
-
-        return CoroutineScope(Dispatchers.IO).async {
-            val response: Response<ArrayList<Producto>>
-            var datos = ArrayList<Producto>()
-
-            response = proveedorServicios.getProductos(limpiarCookie()!!)
-            if (response.isSuccessful) {
-                val datosResponse = response.body()
-                if (datosResponse != null) {
-                    datos = datosResponse
-                }
-            }
-            datos
-        }
-    }
 
     /**
      * Este método se usa para obtener la lista de productos de una búsqueda.
@@ -655,7 +628,7 @@ object ApiRestAdapter {
      * @return Un ArrayList de servicios.
      */
     fun cargarServiciosPorEmpleado(
-        idServicio: Int
+        idEmpleado: Int
     ): Deferred<ArrayList<Servicio>> {
         val proveedorServicios: ProveedorServicios = crearRetrofit()
 
@@ -664,7 +637,7 @@ object ApiRestAdapter {
             var datos = ArrayList<Servicio>()
             response = proveedorServicios.getServiciosPorEmpleado(
                 limpiarCookie()!!,
-                idServicio
+                idEmpleado
             )
             if (response.isSuccessful) {
                 val datosResponse = response.body()

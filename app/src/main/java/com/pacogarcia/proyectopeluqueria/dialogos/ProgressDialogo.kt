@@ -7,6 +7,9 @@ import android.graphics.drawable.ColorDrawable
 import android.view.LayoutInflater
 import com.pacogarcia.proyectopeluqueria.R
 
+/**
+ * Diálogo personalizado para mostrar una barra de progreso mientras se cargan los datos del API
+ */
 class ProgressDialogo {
     companion object {
         fun progressDialog(context: Context): Dialog {

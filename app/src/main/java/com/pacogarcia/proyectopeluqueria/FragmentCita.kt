@@ -467,7 +467,7 @@ class FragmentCita : Fragment(), View.OnClickListener, AdapterView.OnItemSelecte
 
         CoroutineScope(Dispatchers.Main).launch {
 
-            var resultado : MensajeGeneral?
+            val resultado : MensajeGeneral?
 
             if(model.rol != Roles.CLIENTE){
                 resultado = ApiRestAdapter.addCita(idHorarioSeleccionado, idEmpleadoSeleccionado, fechaSeleccionada, idClienteSeleccionado, cadenaStringServicios).await()

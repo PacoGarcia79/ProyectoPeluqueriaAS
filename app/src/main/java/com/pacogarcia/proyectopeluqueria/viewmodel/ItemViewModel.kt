@@ -33,24 +33,6 @@ class ItemViewModel : ViewModel() {
 
     val getUsuario: LiveData<Usuario> get() = liveData
 
-    val getProducto: LiveData<Producto> get() = liveDataProducto
-
-    val getCliente: LiveData<Usuario> get() = liveDataCliente
-
-    fun setProducto(item: Producto) {
-        liveDataProducto.value = item
-    }
-
-
-    fun setUsuarios(values: ArrayList<Usuario>) {
-        liveDatas.value = values
-    }
-
-    fun getUsuarios(): LiveData<ArrayList<Usuario>> {
-        return liveDatas
-    }
-
-
     fun setProductosPorGrupo(values: ArrayList<Producto>) {
         liveDatasProductos.value = values
     }

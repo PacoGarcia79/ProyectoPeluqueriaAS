@@ -86,30 +86,6 @@ class FragmentListaProductosBusqueda : Fragment(), View.OnClickListener {
         /**
          * Listener para la barra de búsqueda
          */
-//        binding.searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
-//            override fun onQueryTextSubmit(query: String): Boolean {
-//                val listaNueva : ArrayList<Producto> = ArrayList()
-//                model.setProductosPorBusqueda(listaNueva)
-//                model.query = query
-//                CoroutineScope(Dispatchers.Main).launch {
-//                    val job = ApiRestAdapter.cargarProductosSearch(query).await()
-//                    model.setProductosPorBusqueda(job)
-//
-//                    if(model.getProductosPorBusqueda().value!!.size == 0){
-//                        Toast.makeText(requireContext(), "No hay resultados", Toast.LENGTH_LONG).show()
-//                    }
-//
-//                    updateRecyclerData(model.getProductosPorBusqueda().value!!)
-//                }
-//
-//                return false
-//            }
-//
-//            override fun onQueryTextChange(newText: String): Boolean {
-//                return false
-//            }
-//        })
-
         binding.searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String): Boolean {
                 val listaNueva : ArrayList<Producto> = ArrayList()
@@ -181,20 +157,6 @@ class FragmentListaProductosBusqueda : Fragment(), View.OnClickListener {
      *
      * @param query cadena para la búsqueda
      */
-//    fun getProductosSearch(query: String) {
-//        CoroutineScope(Dispatchers.Main).launch {
-//            val job = ApiRestAdapter.cargarProductosSearch(query).await()
-//            model.setProductosPorBusqueda(job)
-//
-//            if(model.getProductosPorBusqueda().value!!.size == 0){
-//                Toast.makeText(requireContext(), "No hay resultados", Toast.LENGTH_LONG).show()
-//            }
-//
-//            iniciaAdaptadorRecycler(model.getProductosPorBusqueda().value!!)
-//        }
-//    }
-
-
     fun getProductosSearch(query: String) {
         val deferred = lifecycleScope.async(Dispatchers.IO) {
             ApiRestAdapter.cargarProductosSearch(query).await()

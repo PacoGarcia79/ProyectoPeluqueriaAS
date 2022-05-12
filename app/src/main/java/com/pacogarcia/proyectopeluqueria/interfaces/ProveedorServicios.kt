@@ -22,7 +22,6 @@ interface ProveedorServicios {
 
     /**
      * Este método se usa para el logout del usuario.
-     * @param usuario Objeto de tipo Usuario con los datos necesarios para el logout.
      * @return Un objeto de tipo MensajeLogout para evaluar el resultado de la petición
      */
     @POST("api/auth/logout")
@@ -374,9 +373,8 @@ interface ProveedorServicios {
     ): Response<MensajeGeneral>
 
     /**
-     * Este metodo se usa para eliminar el/los horario/s del/los empleado/s del listado de no disponibilidad, usando los ids de los registros..
+     * Este metodo se usa para eliminar el/los horario/s del/los empleado/s del listado de no disponibilidad, usando los ids de los registros.
      *
-     * @param listaIds String con el listado de ids de los registros de no disponibilidad que se quieren eliminar.
      * @return Un objeto de tipo MensajeGeneral para evaluar el resultado de la petición.
      */
     @PUT("api/peluqueria/horarios/deldisponibilidad/{fechaComienzo}/{fechaFin}/{empleados}/{horas}")
@@ -392,10 +390,7 @@ interface ProveedorServicios {
     /**
      * Este metodo se usa para eliminar el/los horario/s del/los empleado/s del listado de no disponibilidad, para una fecha o un periodo de fechas.
      *
-     * @param fechaComienzo Fecha de comienzo del periodo.
-     * @param fechaFin Fecha de fin del periodo.
-     * @param empleados String con los id de cada empleado separados por coma.
-     * @param horas String con los id de los horarios de cada empleado separados por coma.
+     * @param listaIds String con los id de los objetos Disponibilidad, separados por coma
      * @return Un objeto de tipo MensajeGeneral para evaluar el resultado de la petición.
      */
     @PUT("api/peluqueria/horarios/deldisponibilidad/ids/{listaIds}")

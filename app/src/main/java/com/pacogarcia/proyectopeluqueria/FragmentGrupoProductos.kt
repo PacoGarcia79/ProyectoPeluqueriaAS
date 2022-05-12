@@ -1,6 +1,5 @@
 package com.pacogarcia.proyectopeluqueria
 
-import android.app.ProgressDialog
 import android.content.res.Configuration
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -44,12 +43,6 @@ class FragmentGrupoProductos : Fragment(), View.OnClickListener {
 
         recycler = binding.recyclerListProductoGrupo
 
-//        if (!MainActivity.productoGruposCargados) {
-//            getProductoGrupos()
-//        } else {
-//            iniciaAdaptadorRecycler(MainActivity.productoGrupos!!)
-//        }
-
         model.query = ""
         navController = NavHostFragment.findNavController(this)
 
@@ -85,20 +78,6 @@ class FragmentGrupoProductos : Fragment(), View.OnClickListener {
 
 
         return binding.root
-    }
-
-
-    /**
-     * Obtiene los grupos de productos e inicia el recycler
-     */
-    fun getProductoGrupos() {
-        CoroutineScope(Dispatchers.Main).launch {
-            val job = ApiRestAdapter.cargarProductoGrupos().await()
-            MainActivity.productoGrupos = job
-
-            MainActivity.productoGruposCargados = true
-            iniciaAdaptadorRecycler(MainActivity.productoGrupos!!)
-        }
     }
 
     /**

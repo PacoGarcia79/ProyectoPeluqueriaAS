@@ -177,15 +177,6 @@ class FragmentProducto : Fragment(), View.OnClickListener, AdapterView.OnItemSel
      *
      * @param grupo nombre del grupo de productos
      */
-//    fun cargarProductoPorGrupo(grupo: String) {
-//        CoroutineScope(Dispatchers.Main).launch {
-//            val job = ApiRestAdapter.cargarProductoPorGrupo(grupo).await()
-//            model.setProductosPorGrupo(job)
-//
-//            seleccionaProducto()
-//        }
-//    }
-
     fun cargarProductoPorGrupo(grupo: String) {
         val deferred = lifecycleScope.async(Dispatchers.IO) {
             ApiRestAdapter.cargarProductoPorGrupo(grupo).await()
