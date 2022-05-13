@@ -88,8 +88,6 @@ class HolderListaProductos(v: View, contexto: Context) : RecyclerView.ViewHolder
                     R.id.action_global_dialogoAddProductoCita,
                     bundle
                 )
-
-                //stockProducto.text = "${entity.stock!! - 1} unidades en stock"
             }
         }
     }
