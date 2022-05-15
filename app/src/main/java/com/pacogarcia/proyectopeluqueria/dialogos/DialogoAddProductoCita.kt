@@ -100,14 +100,11 @@ class DialogoAddProductoCita : DialogFragment(), View.OnClickListener,
         CoroutineScope(Dispatchers.Main).launch {
 
             job = when (model.rol) {
-                Roles.CLIENTE -> {
-                    ApiRestAdapter.cargarCitasCliente(fechaInicio, fechaFin, idUsuario).await()
-                }
-                Roles.EMPLEADO -> {
-                    ApiRestAdapter.cargarCitasEmpleado(fechaInicio, fechaFin, idUsuario).await()
+                Roles.ADMIN -> {
+                    ApiRestAdapter.cargarCitas(fechaInicio, fechaFin, 0).await()
                 }
                 else -> {
-                    ApiRestAdapter.cargarCitasTotales(fechaInicio, fechaFin).await()
+                    ApiRestAdapter.cargarCitas(fechaInicio, fechaFin, idUsuario).await()
                 }
             }
 
@@ -126,11 +123,11 @@ class DialogoAddProductoCita : DialogFragment(), View.OnClickListener,
         var nombreMostrar: String
         for (i in citas.indices) {
             when (model.rol) {
-                Roles.ADMIN -> {
-                    nombreMostrar = citas[i].cliente!!
+                Roles.CLIENTE -> {
+                    nombreMostrar = citas[i].profesional!!
                 }
                 else -> {
-                    nombreMostrar = citas[i].nombre!!
+                    nombreMostrar = citas[i].cliente!!
                 }
             }
             listaCitasString.add(

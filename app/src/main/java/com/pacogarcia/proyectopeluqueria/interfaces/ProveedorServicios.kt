@@ -89,50 +89,22 @@ interface ProveedorServicios {
     ): Response<MensajeGeneral>
 
     /**
-     * Este método se usa para obtener la lista de citas de los clientes.
+     * Este método se usa para obtener la lista de citas para un usuario o todos los usuarios. Si se pasa un cero
+     * como parámetro de id de usuario, obtiene todas las citas
      *
      * @param fechaComienzo Fecha de comienzo del periodo a buscar.
      * @param fechaFin Fecha de fin del periodo a buscar.
-     * @param idUsuario Id del usuario cliente.
-     * @return Un ArrayList de Citas.
-     */
-    @GET("api/peluqueria/citas/cliente/{fechaComienzo}/{fechaFin}/{idUsuario}")
-    @Headers("Accept: application/json", "Content-Type: application/json")
-    suspend fun getCitasCliente(
-        @Header("Cookie") cookie: String,
-        @Path("fechaComienzo") fechaComienzo: String, @Path("fechaFin") fechaFin: String,
-        @Path("idUsuario") idUsuario: Int
-    ): Response<ArrayList<Cita>>
-
-    /**
-     * Este método se usa para obtener la lista de citas de los empleados.
+     * @param idUsuario id del usuario del que se quieren obtener las citas, o cero si se quieren todas
      *
-     * @param fechaComienzo Fecha de comienzo del periodo a buscar.
-     * @param fechaFin Fecha de fin del periodo a buscar.
-     * @param idUsuario Id del usuario empleado.
      * @return Un ArrayList de Citas.
      */
-    @GET("api/peluqueria/citas/empleado/{fechaComienzo}/{fechaFin}/{idUsuario}")
+    @GET("api/peluqueria/citas/{fechaComienzo}/{fechaFin}/{idUsuario}")
     @Headers("Accept: application/json", "Content-Type: application/json")
-    suspend fun getCitasEmpleado(
-        @Header("Cookie") cookie: String,
-        @Path("fechaComienzo") fechaComienzo: String, @Path("fechaFin") fechaFin: String,
-        @Path("idUsuario") idUsuario: Int
-    ): Response<ArrayList<Cita>>
-
-    /**
-     * Este método se usa para obtener la lista completa de citas.
-     *
-     * @param fechaComienzo Fecha de comienzo del periodo a buscar.
-     * @param fechaFin Fecha de fin del periodo a buscar.
-     * @return Un ArrayList de Citas.
-     */
-    @GET("api/peluqueria/citas/{fechaComienzo}/{fechaFin}")
-    @Headers("Accept: application/json", "Content-Type: application/json")
-    suspend fun getTotalCitas(
+    suspend fun cargarCitas(
         @Header("Cookie") cookie: String,
         @Path("fechaComienzo") fechaComienzo: String,
-        @Path("fechaFin") fechaFin: String
+        @Path("fechaFin") fechaFin: String,
+        @Path("idUsuario") idUsuario: Int
     ): Response<ArrayList<Cita>>
 
     /**

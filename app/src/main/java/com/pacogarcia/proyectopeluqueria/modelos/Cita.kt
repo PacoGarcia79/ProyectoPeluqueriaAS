@@ -14,7 +14,6 @@ class Cita() : Parcelable {
     var fecha: Date?
     var cliente: String?
     var profesional: String?
-    var nombre: String?
     var hora: String?
     var servicios: String?
     var precio_servicios: Double?
@@ -24,6 +23,23 @@ class Cita() : Parcelable {
     var cancelada: Boolean?
     var telefono: String?
 
+    constructor(parcel: Parcel) : this() {
+        idCliente = parcel.readValue(Int::class.java.classLoader) as? Int
+        idHorarioEmpleado = parcel.readValue(Int::class.java.classLoader) as? Int
+        idCita = parcel.readValue(Int::class.java.classLoader) as? Int
+        fecha = parcel.readSerializable() as Date?
+        cliente = parcel.readString()
+        profesional = parcel.readString()
+        hora = parcel.readString()
+        servicios = parcel.readString()
+        precio_servicios = parcel.readValue(Double::class.java.classLoader) as? Double
+        productos = parcel.readString()
+        cantidad = parcel.readString()
+        precio_productos = parcel.readValue(Double::class.java.classLoader) as? Double
+        cancelada = parcel.readValue(Boolean::class.java.classLoader) as? Boolean
+        telefono = parcel.readString()
+    }
+
 
     init {
         idCliente = 0
@@ -32,7 +48,6 @@ class Cita() : Parcelable {
         fecha = null
         cliente = ""
         profesional = ""
-        nombre = ""
         hora = ""
         servicios = ""
         precio_servicios = 0.0
@@ -81,52 +96,6 @@ class Cita() : Parcelable {
     }
 
     constructor(
-        idCita: Int,
-        fecha: Date,
-        nombre: String,
-        hora: String,
-        servicios: String,
-        precio_servicios: Double,
-        productos: String,
-        cantidad: String,
-        precio_Productos: Double
-    ) : this() {
-        this.idCita = idCita
-        this.fecha = fecha
-        this.nombre = nombre
-        this.hora = hora
-        this.servicios = servicios
-        this.precio_servicios = precio_servicios
-        this.productos = productos
-        this.cantidad = cantidad
-        this.precio_productos = precio_Productos
-    }
-
-    constructor(
-        idCita: Int,
-        fecha: Date,
-        nombre: String,
-        hora: String,
-        servicios: String,
-        precio_servicios: Double,
-        productos: String,
-        cantidad: String,
-        precio_Productos: Double,
-        telefono: String
-    ) : this() {
-        this.idCita = idCita
-        this.fecha = fecha
-        this.nombre = nombre
-        this.hora = hora
-        this.servicios = servicios
-        this.precio_servicios = precio_servicios
-        this.productos = productos
-        this.cantidad = cantidad
-        this.precio_productos = precio_Productos
-        this.telefono = telefono
-    }
-
-    constructor(
         idCliente: Int,
         fecha: Date,
         cliente: String,
@@ -148,22 +117,30 @@ class Cita() : Parcelable {
         this.precio_productos = precio_Productos
     }
 
-    constructor(parcel: Parcel) : this() {
-        idCliente = parcel.readValue(Int::class.java.classLoader) as? Int
-        idHorarioEmpleado = parcel.readValue(Int::class.java.classLoader) as? Int
-        idCita = parcel.readValue(Int::class.java.classLoader) as? Int
-        fecha = parcel.readSerializable() as Date?
-        cliente = parcel.readString()
-        profesional = parcel.readString()
-        nombre = parcel.readString()
-        hora = parcel.readString()
-        servicios = parcel.readString()
-        precio_servicios = parcel.readValue(Double::class.java.classLoader) as? Double
-        productos = parcel.readString()
-        cantidad = parcel.readString()
-        precio_productos = parcel.readValue(Double::class.java.classLoader) as? Double
-        cancelada = parcel.readValue(Boolean::class.java.classLoader) as? Boolean
-        telefono = parcel.readString()
+    constructor(
+        idCliente: Int,
+        fecha: Date,
+        cliente: String,
+        profesional: String,
+        hora: String,
+        servicios: String,
+        precio_servicios: Double,
+        productos: String,
+        cantidad: String,
+        precio_Productos: Double,
+        telefono: String
+    ) : this() {
+        this.idCliente = idCliente
+        this.fecha = fecha
+        this.cliente = cliente
+        this.profesional = profesional
+        this.hora = hora
+        this.servicios = servicios
+        this.precio_servicios = precio_servicios
+        this.productos = productos
+        this.cantidad = cantidad
+        this.precio_productos = precio_Productos
+        this.telefono = telefono
     }
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
@@ -173,7 +150,6 @@ class Cita() : Parcelable {
         parcel.writeSerializable(fecha)
         parcel.writeString(cliente)
         parcel.writeString(profesional)
-        parcel.writeString(nombre)
         parcel.writeString(hora)
         parcel.writeString(servicios)
         parcel.writeValue(precio_servicios)
@@ -197,5 +173,4 @@ class Cita() : Parcelable {
             return arrayOfNulls(size)
         }
     }
-
 }

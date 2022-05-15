@@ -317,87 +317,21 @@ object ApiRestAdapter {
     // <editor-fold defaultstate="collapsed" desc=" Citas ">
 
     /**
-     * Este método se usa para obtener la lista de citas de los empleados.
+     * Este método se usa para obtener la lista de citas para un usuario o todos los usuarios. Si se pasa un cero
+     * como parámetro de id de usuario, obtiene todas las citas
      *
      * @param fechaComienzo Fecha de comienzo del periodo a buscar.
      * @param fechaFin Fecha de fin del periodo a buscar.
-     * @param idUsuario Id del usuario empleado.
+     * @param idUsuario id del usuario del que se quieren obtener las citas, o cero si se quieren todas
      * @return Un ArrayList de Citas.
      */
-    fun cargarCitasEmpleado(
-        fechaComienzo: String,
-        fechaFin: String,
-        idUsuario: Int
-    ): Deferred<ArrayList<Cita>> {
+    fun cargarCitas(fechaComienzo: String, fechaFin: String, idUsuario: Int): Deferred<ArrayList<Cita>> {
         val proveedorServicios: ProveedorServicios = crearRetrofit()
 
         return CoroutineScope(Dispatchers.IO).async {
             val response: Response<ArrayList<Cita>>
             var datos = ArrayList<Cita>()
-            response = proveedorServicios.getCitasEmpleado(
-                limpiarCookie()!!,
-                fechaComienzo,
-                fechaFin,
-                idUsuario
-            )
-            if (response.isSuccessful) {
-                val datosResponse = response.body()
-                if (datosResponse != null) {
-                    datos = datosResponse
-                }
-            }
-            datos
-        }
-    }
-
-    /**
-     * Este método se usa para obtener la lista de citas de los clientes.
-     *
-     * @param fechaComienzo Fecha de comienzo del periodo a buscar.
-     * @param fechaFin Fecha de fin del periodo a buscar.
-     * @param idUsuario Id del usuario cliente.
-     * @return Un ArrayList de Citas.
-     */
-    fun cargarCitasCliente(
-        fechaComienzo: String,
-        fechaFin: String,
-        idUsuario: Int
-    ): Deferred<ArrayList<Cita>> {
-        val proveedorServicios: ProveedorServicios = crearRetrofit()
-
-        return CoroutineScope(Dispatchers.IO).async {
-            val response: Response<ArrayList<Cita>>
-            var datos = ArrayList<Cita>()
-            response = proveedorServicios.getCitasCliente(
-                limpiarCookie()!!,
-                fechaComienzo,
-                fechaFin,
-                idUsuario
-            )
-            if (response.isSuccessful) {
-                val datosResponse = response.body()
-                if (datosResponse != null) {
-                    datos = datosResponse
-                }
-            }
-            datos
-        }
-    }
-
-    /**
-     * Este método se usa para obtener la lista completa de citas.
-     *
-     * @param fechaComienzo Fecha de comienzo del periodo a buscar.
-     * @param fechaFin Fecha de fin del periodo a buscar.
-     * @return Un ArrayList de Citas.
-     */
-    fun cargarCitasTotales(fechaComienzo: String, fechaFin: String): Deferred<ArrayList<Cita>> {
-        val proveedorServicios: ProveedorServicios = crearRetrofit()
-
-        return CoroutineScope(Dispatchers.IO).async {
-            val response: Response<ArrayList<Cita>>
-            var datos = ArrayList<Cita>()
-            response = proveedorServicios.getTotalCitas(limpiarCookie()!!, fechaComienzo, fechaFin)
+            response = proveedorServicios.cargarCitas(limpiarCookie()!!, fechaComienzo, fechaFin, idUsuario)
             if (response.isSuccessful) {
                 val datosResponse = response.body()
                 if (datosResponse != null) {

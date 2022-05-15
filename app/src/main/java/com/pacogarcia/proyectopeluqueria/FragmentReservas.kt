@@ -234,14 +234,11 @@ class FragmentReservas : Fragment(), View.OnClickListener {
         CoroutineScope(Dispatchers.Main).launch {
 
             job = when (model.rol) {
-                Roles.CLIENTE -> {
-                    ApiRestAdapter.cargarCitasCliente(fechaInicio, fechaFin, idUsuario).await()
-                }
-                Roles.EMPLEADO -> {
-                    ApiRestAdapter.cargarCitasEmpleado(fechaInicio, fechaFin, idUsuario).await()
+                Roles.ADMIN -> {
+                    ApiRestAdapter.cargarCitas(fechaInicio, fechaFin, 0).await()
                 }
                 else -> {
-                    ApiRestAdapter.cargarCitasTotales(fechaInicio, fechaFin).await()
+                    ApiRestAdapter.cargarCitas(fechaInicio, fechaFin, idUsuario).await()
                 }
             }
 
@@ -304,14 +301,11 @@ class FragmentReservas : Fragment(), View.OnClickListener {
         CoroutineScope(Dispatchers.Main).launch {
 
             job = when (model.rol) {
-                Roles.CLIENTE -> {
-                    ApiRestAdapter.cargarCitasCliente(fechaInicio, fechaFin, idUsuario).await()
-                }
-                Roles.EMPLEADO -> {
-                    ApiRestAdapter.cargarCitasEmpleado(fechaInicio, fechaFin, idUsuario).await()
+                Roles.ADMIN -> {
+                    ApiRestAdapter.cargarCitas(fechaInicio, fechaFin, 0).await()
                 }
                 else -> {
-                    ApiRestAdapter.cargarCitasTotales(fechaInicio, fechaFin).await()
+                    ApiRestAdapter.cargarCitas(fechaInicio, fechaFin, idUsuario).await()
                 }
             }
 
@@ -343,7 +337,7 @@ class FragmentReservas : Fragment(), View.OnClickListener {
     /**
      * Actualiza el adaptador con los nuevos datos
      *
-     * @param datos nuevo array de datos para el adaptador
+     * @param citas nuevo array de datos para el adaptador
      */
     fun updateRecyclerData(citas: ArrayList<Cita>) {
         adaptador.setData(citas)

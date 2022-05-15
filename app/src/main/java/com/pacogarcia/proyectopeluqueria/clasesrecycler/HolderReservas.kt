@@ -61,10 +61,10 @@ class HolderReservas(v: View, contexto: Context) : RecyclerView.ViewHolder(v),
 
     private fun setNombresText(entity: Cita) {
 
-        if (MainActivity.rol == Roles.ADMIN) {
-            textNombre.text = "Cita con ${entity.cliente}"
+        if (MainActivity.rol == Roles.CLIENTE) {
+            textNombre.text = "Cita con ${entity.profesional}"
         } else {
-            textNombre.text = "Cita con ${entity.nombre}"
+            textNombre.text = "Cita con ${entity.cliente}"
         }
     }
 
