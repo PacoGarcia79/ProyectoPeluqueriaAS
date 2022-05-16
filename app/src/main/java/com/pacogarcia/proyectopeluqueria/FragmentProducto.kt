@@ -2,7 +2,6 @@ package com.pacogarcia.proyectopeluqueria
 
 import android.content.res.Configuration
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -15,12 +14,12 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 import com.google.android.material.floatingactionbutton.FloatingActionButton
-import com.google.android.material.snackbar.Snackbar
 import com.pacogarcia.proyectopeluqueria.clasesestaticas.ImagenUtilidad
 import com.pacogarcia.proyectopeluqueria.dialogos.ProgressDialogo
 import com.pacogarcia.proyectopeluqueria.modelos.Producto
 import com.pacogarcia.proyectopeluqueria.viewmodel.ItemViewModel
 import kotlinx.coroutines.*
+import java.net.SocketTimeoutException
 
 /**
  * Fragmento para la gestión de cada producto
@@ -33,7 +32,7 @@ class FragmentProducto : Fragment(), View.OnClickListener, AdapterView.OnItemSel
 
     private val model: ItemViewModel by activityViewModels()
 
-    private lateinit var viewLayout : View
+    private lateinit var viewLayout: View
 
     private var producto: Producto? = Producto()
     private var productoBusqueda: Producto? = Producto()
@@ -52,7 +51,7 @@ class FragmentProducto : Fragment(), View.OnClickListener, AdapterView.OnItemSel
             // We use a String here, but any type that can be put in a Bundle is supported
             val result = bundle.getBoolean("bundleKey")
             // Do something with the result
-            if(result){
+            if (result) {
                 setSpinner(producto?.stock!! - cantidadSeleccionada)
             }
         }
@@ -65,9 +64,11 @@ class FragmentProducto : Fragment(), View.OnClickListener, AdapterView.OnItemSel
         super.onCreateView(inflater, container, savedInstanceState)
 
         if (context?.getResources()
-            ?.getConfiguration()?.orientation == Configuration.ORIENTATION_LANDSCAPE) {
-            viewLayout = inflater.inflate(R.layout.fragment_tipo_producto_horizontal, container, false)
-        }else{
+                ?.getConfiguration()?.orientation == Configuration.ORIENTATION_LANDSCAPE
+        ) {
+            viewLayout =
+                inflater.inflate(R.layout.fragment_tipo_producto_horizontal, container, false)
+        } else {
             viewLayout = inflater.inflate(R.layout.fragment_tipo_producto, container, false)
         }
 
@@ -89,7 +90,8 @@ class FragmentProducto : Fragment(), View.OnClickListener, AdapterView.OnItemSel
 
         viewLayout.findViewById<CoordinatorLayout>(R.id.vistaCompleta).setOnClickListener(this)
         swipeDetector = SwipeDetector()
-        viewLayout.findViewById<CoordinatorLayout>(R.id.vistaCompleta).setOnTouchListener(swipeDetector)
+        viewLayout.findViewById<CoordinatorLayout>(R.id.vistaCompleta)
+            .setOnTouchListener(swipeDetector)
         viewLayout.findViewById<FloatingActionButton>(R.id.fabHome).setOnClickListener(this)
         viewLayout.findViewById<Button>(R.id.addCitaBtn).setOnClickListener(this)
 
@@ -165,9 +167,11 @@ class FragmentProducto : Fragment(), View.OnClickListener, AdapterView.OnItemSel
 
         viewLayout.findViewById<TextView>(R.id.nombreProducto).text = producto?.nombre
         viewLayout.findViewById<TextView>(R.id.descripcionProducto).text = producto?.descripcion
-        viewLayout.findViewById<TextView>(R.id.precioProducto).text = "${producto?.precio.toString()}€"
+        viewLayout.findViewById<TextView>(R.id.precioProducto).text =
+            "${producto?.precio.toString()}€"
 
-        viewLayout.findViewById<ImageView>(R.id.fotoProducto).setImageBitmap(ImagenUtilidad.convertirStringBitmap(producto?.foto))
+        viewLayout.findViewById<ImageView>(R.id.fotoProducto)
+            .setImageBitmap(ImagenUtilidad.convertirStringBitmap(producto?.foto))
 
         setSpinner(producto?.stock)
     }
@@ -203,6 +207,18 @@ class FragmentProducto : Fragment(), View.OnClickListener, AdapterView.OnItemSel
 
                     seleccionaProducto()
 
+                } catch (e: SocketTimeoutException) {
+                    Toast.makeText(
+                        activity,
+                        "Error al acceder a la base de datos",
+                        Toast.LENGTH_SHORT
+                    )
+                        .show()
+                } catch (e: IllegalStateException) {
+                    Toast.makeText(activity, "Debe reiniciar la sesión", Toast.LENGTH_LONG)
+                        .show()
+
+                    navegarInicio()
                 } finally {
                     // when deferred finishes and exits try block finally
                     // will be invoked and we can cancel the progress dialog
@@ -212,10 +228,28 @@ class FragmentProducto : Fragment(), View.OnClickListener, AdapterView.OnItemSel
             } else {
                 // if deferred completed already withing the wait time, skip
                 // showing the progress dialog and post the deferred result
-                val result = deferred.await()
-                model.setProductosPorGrupo(result)
 
-                seleccionaProducto()
+                try {
+
+                    val result = deferred.await()
+                    model.setProductosPorGrupo(result)
+
+                    seleccionaProducto()
+
+                } catch (e: SocketTimeoutException) {
+                    Toast.makeText(
+                        activity,
+                        "Error al acceder a la base de datos",
+                        Toast.LENGTH_SHORT
+                    )
+                        .show()
+                } catch (e: IllegalStateException) {
+                    Toast.makeText(activity, "Debe reiniciar la sesión", Toast.LENGTH_LONG)
+                        .show()
+
+                    navegarInicio()
+                }
+
             }
         }
     }
@@ -223,7 +257,7 @@ class FragmentProducto : Fragment(), View.OnClickListener, AdapterView.OnItemSel
     /**
      * Establece el spinner con los datos del stock de cada producto
      *
-     * @param producto producto del que se obtiene el stock
+     * @param cantidadStock cantidad en stock del producto
      */
     private fun setSpinner(cantidadStock: Int?) {
 
@@ -247,9 +281,9 @@ class FragmentProducto : Fragment(), View.OnClickListener, AdapterView.OnItemSel
      * @param cantidad stock en forma de entero
      * @return array con el stock
      */
-    fun llenaArrayCantidadStock(cantidad : Int) : Array<Int?>{
+    fun llenaArrayCantidadStock(cantidad: Int): Array<Int?> {
         val lista = ArrayList<Int>()
-        for(i in 1..cantidad){
+        for (i in 1..cantidad) {
             lista.add(i)
         }
 
@@ -274,7 +308,8 @@ class FragmentProducto : Fragment(), View.OnClickListener, AdapterView.OnItemSel
         (view as ViewGroup).removeAllViewsInLayout()
 
         if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
-            viewLayout = inflater.inflate(R.layout.fragment_tipo_producto_horizontal, view as ViewGroup)
+            viewLayout =
+                inflater.inflate(R.layout.fragment_tipo_producto_horizontal, view as ViewGroup)
 
         } else {
             viewLayout = inflater.inflate(R.layout.fragment_tipo_producto, view as ViewGroup)
@@ -283,6 +318,13 @@ class FragmentProducto : Fragment(), View.OnClickListener, AdapterView.OnItemSel
         viewLayout.findViewById<FloatingActionButton>(R.id.fabHome).setOnClickListener(this)
         viewLayout.findViewById<Button>(R.id.addCitaBtn).setOnClickListener(this)
         seleccionaProducto()
+    }
+
+    fun navegarInicio() {
+        val contextoFragment = this
+        MainActivity.autorizado = false
+        val navController = NavHostFragment.findNavController(contextoFragment)
+        navController.navigate(R.id.action_global_fragmentInicio2)
     }
 
 }

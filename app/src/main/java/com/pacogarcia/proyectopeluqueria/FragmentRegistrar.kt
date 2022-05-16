@@ -21,6 +21,7 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import java.net.SocketTimeoutException
 import java.util.concurrent.TimeUnit
 import kotlin.NoSuchElementException
 
@@ -378,32 +379,39 @@ class FragmentRegistrar : Fragment(), View.OnClickListener {
         val contexto = this
         CoroutineScope(Dispatchers.Main).launch {
 
-            val resultado = ApiRestAdapter.addUsuario(usuario).await()
+            try {
 
-            if (resultado.mensaje.equals("Registro insertado")) {
-                Toast.makeText(
-                    requireContext(),
-                    "Registro correcto. Haz login para acceder a la aplicación",
-                    Toast.LENGTH_LONG
-                ).show()
+                val resultado = ApiRestAdapter.addUsuario(usuario).await()
 
-                actividadPrincipal.enableDrawer()
+                if (resultado.mensaje.equals("Registro insertado")) {
+                    Toast.makeText(
+                        requireContext(),
+                        "Registro correcto. Haz login para acceder a la aplicación",
+                        Toast.LENGTH_LONG
+                    ).show()
 
-                val navController = NavHostFragment.findNavController(contexto)
-                navController.navigate(R.id.action_fragmentRegistrar_to_fragmentInicio2)
+                    actividadPrincipal.enableDrawer()
 
-            } else if (resultado.mensaje.equals("Ya existe el usuario")) {
-                Toast.makeText(
-                    requireContext(),
-                    resultado.mensaje,
-                    Toast.LENGTH_LONG
-                ).show()
-            } else {
-                Toast.makeText(
-                    activity,
-                    "Error al registrar",
-                    Toast.LENGTH_SHORT
-                ).show()
+                    val navController = NavHostFragment.findNavController(contexto)
+                    navController.navigate(R.id.action_fragmentRegistrar_to_fragmentInicio2)
+
+                } else if (resultado.mensaje.equals("Ya existe el usuario")) {
+                    Toast.makeText(
+                        requireContext(),
+                        resultado.mensaje,
+                        Toast.LENGTH_LONG
+                    ).show()
+                } else {
+                    Toast.makeText(
+                        activity,
+                        "Error al registrar",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+
+            } catch (e: SocketTimeoutException) {
+                Toast.makeText(activity, "Error al acceder a la base de datos", Toast.LENGTH_SHORT)
+                    .show()
             }
         }
     }

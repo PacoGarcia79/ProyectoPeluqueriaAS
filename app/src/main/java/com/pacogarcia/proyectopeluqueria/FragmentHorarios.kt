@@ -7,6 +7,7 @@ import android.widget.*
 import androidx.annotation.RequiresApi
 import androidx.appcompat.view.ActionMode
 import androidx.fragment.app.Fragment
+import androidx.navigation.fragment.NavHostFragment
 import androidx.recyclerview.selection.SelectionPredicates
 import androidx.recyclerview.selection.SelectionTracker
 import androidx.recyclerview.selection.StableIdKeyProvider
@@ -26,6 +27,7 @@ import com.pacogarcia.proyectopeluqueria.modelos.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import java.net.SocketTimeoutException
 import kotlin.math.absoluteValue
 
 /**
@@ -78,7 +80,7 @@ class FragmentHorarios : Fragment(), View.OnClickListener {
                 Boolean {
             return when (item.itemId) {
                 R.id.deshabilita -> {
-                    val lista : List<Long> = tracker?.selection?.sorted()?.reversed()!!
+                    val lista: List<Long> = tracker?.selection?.sorted()?.reversed()!!
 
                     val listasString = obtieneListaStringDisponibilidad(lista)
 
@@ -138,9 +140,9 @@ class FragmentHorarios : Fragment(), View.OnClickListener {
      * elementos
      * @return cadena string con los ids
      */
-    fun obtieneListaStringDisponibilidad(lista : List<Long>) : String{
+    fun obtieneListaStringDisponibilidad(lista: List<Long>): String {
         val sb = StringBuilder()
-        val listaIdDisponibilidad : ArrayList<Int> = ArrayList()
+        val listaIdDisponibilidad: ArrayList<Int> = ArrayList()
 
         lista.forEach {
             listaIdDisponibilidad.add(listaNoDisponibilidad.get(it.absoluteValue.toInt()).idDisponibilidad!!)
@@ -153,45 +155,6 @@ class FragmentHorarios : Fragment(), View.OnClickListener {
         }
 
         return sb.toString()
-    }
-
-    /**
-     * Habilita los elementos seleccionados en el listado
-     *
-     * @param disponibilidadListaString string con los ids de los elementos seleccionados
-     * @param lista lista de números de tipo long creada por el tracker y que va modificando conforme se seleccionan o deseleccionan
-     * elementos
-     */
-    private fun habilitaDisponibilidadIds(disponibilidadListaString: String, lista : List<Long>) {
-        CoroutineScope(Dispatchers.Main).launch {
-            val resultado = ApiRestAdapter.putDelDisponibilidadIds(disponibilidadListaString).await()
-
-            if (resultado.mensaje.equals("Registro/s actualizado/s")) {
-
-                lista.forEach { id ->
-                    listaNoDisponibilidad.removeAt(id.toInt())
-                }
-                recycler.recycledViewPool.clear()
-                adaptador.notifyDataSetChanged()
-                tracker?.clearSelection()
-                actionMode = null
-
-                refrescaPantalla()
-
-                Snackbar.make(
-                    binding.root,
-                    "Disponibilidad Modificada",
-                    Snackbar.LENGTH_LONG
-                ).show()
-
-            } else {
-                Snackbar.make(
-                    binding.root,
-                    "Ha habido un error al modificar",
-                    Snackbar.LENGTH_LONG
-                ).show()
-            }
-        }
     }
 
     /**
@@ -251,20 +214,32 @@ class FragmentHorarios : Fragment(), View.OnClickListener {
         var job: ArrayList<Usuario>
         CoroutineScope(Dispatchers.Main).launch {
 
-            job = ApiRestAdapter.cargarEmpleados().await()
+            try {
 
-            listaEmpleados = job
+                job = ApiRestAdapter.cargarEmpleados().await()
 
-            for (empleado in listaEmpleados) {
-                val chip =
-                    layoutInflater.inflate(
-                        R.layout.single_chip_layout,
-                        binding.chipGroupProfesionales,
-                        false
-                    ) as Chip
-                chip.text = empleado.nombre
-                chip.id = empleado.idUsuario!!
-                binding.chipGroupProfesionales.addView(chip)
+                listaEmpleados = job
+
+                for (empleado in listaEmpleados) {
+                    val chip =
+                        layoutInflater.inflate(
+                            R.layout.single_chip_layout,
+                            binding.chipGroupProfesionales,
+                            false
+                        ) as Chip
+                    chip.text = empleado.nombre
+                    chip.id = empleado.idUsuario!!
+                    binding.chipGroupProfesionales.addView(chip)
+                }
+
+            } catch (e: SocketTimeoutException) {
+                Toast.makeText(activity, "Error al acceder a la base de datos", Toast.LENGTH_SHORT)
+                    .show()
+            } catch (e: IllegalStateException) {
+                Toast.makeText(activity, "Debe reiniciar la sesión", Toast.LENGTH_LONG)
+                    .show()
+
+                navegarInicio()
             }
         }
     }
@@ -276,20 +251,32 @@ class FragmentHorarios : Fragment(), View.OnClickListener {
         var job: ArrayList<Horario>
         CoroutineScope(Dispatchers.Main).launch {
 
-            job = ApiRestAdapter.cargarHorarios().await()
+            try {
 
-            listaHorarios = job
+                job = ApiRestAdapter.cargarHorarios().await()
 
-            for (horario in listaHorarios) {
-                val chip =
-                    layoutInflater.inflate(
-                        R.layout.single_chip_layout,
-                        binding.chipGroupHoras,
-                        false
-                    ) as Chip
-                chip.text = horario.hora?.substringBeforeLast(":")
-                chip.id = horario.idHorario!!
-                binding.chipGroupHoras.addView(chip)
+                listaHorarios = job
+
+                for (horario in listaHorarios) {
+                    val chip =
+                        layoutInflater.inflate(
+                            R.layout.single_chip_layout,
+                            binding.chipGroupHoras,
+                            false
+                        ) as Chip
+                    chip.text = horario.hora?.substringBeforeLast(":")
+                    chip.id = horario.idHorario!!
+                    binding.chipGroupHoras.addView(chip)
+                }
+
+            } catch (e: SocketTimeoutException) {
+                Toast.makeText(activity, "Error al acceder a la base de datos", Toast.LENGTH_SHORT)
+                    .show()
+            } catch (e: IllegalStateException) {
+                Toast.makeText(activity, "Debe reiniciar la sesión", Toast.LENGTH_LONG)
+                    .show()
+
+                navegarInicio()
             }
         }
     }
@@ -301,11 +288,23 @@ class FragmentHorarios : Fragment(), View.OnClickListener {
         var job: ArrayList<Disponibilidad>
         CoroutineScope(Dispatchers.Main).launch {
 
-            job = ApiRestAdapter.cargarHorariosDeshabilitados().await()
+            try {
 
-            listaNoDisponibilidad = job
+                job = ApiRestAdapter.cargarHorariosDeshabilitados().await()
 
-            iniciaAdaptadorRecycler(listaNoDisponibilidad)
+                listaNoDisponibilidad = job
+
+                iniciaAdaptadorRecycler(listaNoDisponibilidad)
+
+            } catch (e: SocketTimeoutException) {
+                Toast.makeText(activity, "Error al acceder a la base de datos", Toast.LENGTH_SHORT)
+                    .show()
+            } catch (e: IllegalStateException) {
+                Toast.makeText(activity, "Debe reiniciar la sesión", Toast.LENGTH_LONG)
+                    .show()
+
+                navegarInicio()
+            }
         }
     }
 
@@ -343,10 +342,11 @@ class FragmentHorarios : Fragment(), View.OnClickListener {
 
                 obtieneListadosString()
 
-                if(cadenaStringEmpleados.isEmpty() || cadenaStringHorarios.isEmpty()
-                    || fechaComienzoPeriodo.isEmpty() || fechaFinPeriodo.isEmpty()){
+                if (cadenaStringEmpleados.isEmpty() || cadenaStringHorarios.isEmpty()
+                    || fechaComienzoPeriodo.isEmpty() || fechaFinPeriodo.isEmpty()
+                ) {
                     muestraDialogo()
-                }else{
+                } else {
                     habilitaDisponibilidad()
                 }
             }
@@ -354,10 +354,11 @@ class FragmentHorarios : Fragment(), View.OnClickListener {
 
                 obtieneListadosString()
 
-                if(cadenaStringEmpleados.isEmpty() || cadenaStringHorarios.isEmpty()
-                    || fechaComienzoPeriodo.isEmpty() || fechaFinPeriodo.isEmpty()){
+                if (cadenaStringEmpleados.isEmpty() || cadenaStringHorarios.isEmpty()
+                    || fechaComienzoPeriodo.isEmpty() || fechaFinPeriodo.isEmpty()
+                ) {
                     muestraDialogo()
-                }else{
+                } else {
                     deshabilitaDisponibilidad()
                 }
             }
@@ -412,39 +413,46 @@ class FragmentHorarios : Fragment(), View.OnClickListener {
 
         CoroutineScope(Dispatchers.Main).launch {
 
-            var resultado: MensajeGeneral?
+            try {
 
-            resultado = ApiRestAdapter.putAddDisponibilidad(
-                fechaComienzoPeriodo, fechaFinPeriodo, cadenaStringEmpleados,
-                cadenaStringHorarios
-            ).await()
+                var resultado: MensajeGeneral?
 
-            if (resultado.mensaje.equals("Registro actualizado")) {
+                resultado = ApiRestAdapter.putAddDisponibilidad(
+                    fechaComienzoPeriodo, fechaFinPeriodo, cadenaStringEmpleados,
+                    cadenaStringHorarios
+                ).await()
 
-                recycler.recycledViewPool.clear()
-                adaptador.notifyDataSetChanged()
-                tracker?.clearSelection()
-                actionMode = null
+                if (resultado.mensaje.equals("Registro actualizado")) {
 
-                refrescaPantalla()
+                    recycler.recycledViewPool.clear()
+                    adaptador.notifyDataSetChanged()
+                    tracker?.clearSelection()
+                    actionMode = null
 
-                Toast.makeText(
-                    requireContext(),
-                    "Disponibilidad Modificada",
-                    Toast.LENGTH_SHORT
-                ).show()
-            } else if (resultado.mensaje.equals("Error registro")) {
-                Toast.makeText(
-                    activity,
-                    "No se puede realizar al existir previamente el registro",
-                    Toast.LENGTH_SHORT
-                ).show()
-            } else {
-                Toast.makeText(
-                    activity,
-                    "Ha habido un error al modificar",
-                    Toast.LENGTH_SHORT
-                ).show()
+                    refrescaPantalla()
+
+                    Toast.makeText(
+                        requireContext(),
+                        "Disponibilidad Modificada",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                } else if (resultado.mensaje.equals("Error registro")) {
+                    Toast.makeText(
+                        activity,
+                        "No se puede realizar al existir previamente el registro",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                } else {
+                    Toast.makeText(
+                        activity,
+                        "Ha habido un error al modificar",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+
+            } catch (e: SocketTimeoutException) {
+                Toast.makeText(activity, "Error al acceder a la base de datos", Toast.LENGTH_SHORT)
+                    .show()
             }
         }
     }
@@ -456,33 +464,88 @@ class FragmentHorarios : Fragment(), View.OnClickListener {
 
         CoroutineScope(Dispatchers.Main).launch {
 
-            var resultado: MensajeGeneral?
+            try {
 
-            resultado = ApiRestAdapter.putDelDisponibilidad(
-                fechaComienzoPeriodo, fechaFinPeriodo, cadenaStringEmpleados,
-                cadenaStringHorarios
-            ).await()
+                var resultado: MensajeGeneral?
 
-            if (resultado.mensaje.equals("Registro actualizado")) {
+                resultado = ApiRestAdapter.putDelDisponibilidad(
+                    fechaComienzoPeriodo, fechaFinPeriodo, cadenaStringEmpleados,
+                    cadenaStringHorarios
+                ).await()
 
-                recycler.recycledViewPool.clear()
-                adaptador.notifyDataSetChanged()
-                tracker?.clearSelection()
-                actionMode = null
+                if (resultado.mensaje.equals("Registro actualizado")) {
 
-                refrescaPantalla()
+                    recycler.recycledViewPool.clear()
+                    adaptador.notifyDataSetChanged()
+                    tracker?.clearSelection()
+                    actionMode = null
 
-                Toast.makeText(
-                    requireContext(),
-                    "Disponibilidad Modificada",
-                    Toast.LENGTH_SHORT
-                ).show()
-            } else {
-                Toast.makeText(
-                    activity,
-                    "Ha habido un error al modificar",
-                    Toast.LENGTH_SHORT
-                ).show()
+                    refrescaPantalla()
+
+                    Toast.makeText(
+                        requireContext(),
+                        "Disponibilidad Modificada",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                } else {
+                    Toast.makeText(
+                        activity,
+                        "Ha habido un error al modificar",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+
+            } catch (e: SocketTimeoutException) {
+                Toast.makeText(activity, "Error al acceder a la base de datos", Toast.LENGTH_SHORT)
+                    .show()
+            }
+        }
+    }
+
+    /**
+     * Habilita los elementos seleccionados en el listado
+     *
+     * @param disponibilidadListaString string con los ids de los elementos seleccionados
+     * @param lista lista de números de tipo long creada por el tracker y que va modificando conforme se seleccionan o deseleccionan
+     * elementos
+     */
+    private fun habilitaDisponibilidadIds(disponibilidadListaString: String, lista: List<Long>) {
+        CoroutineScope(Dispatchers.Main).launch {
+
+            try {
+
+                val resultado =
+                    ApiRestAdapter.putDelDisponibilidadIds(disponibilidadListaString).await()
+
+                if (resultado.mensaje.equals("Registro/s actualizado/s")) {
+
+                    lista.forEach { id ->
+                        listaNoDisponibilidad.removeAt(id.toInt())
+                    }
+                    recycler.recycledViewPool.clear()
+                    adaptador.notifyDataSetChanged()
+                    tracker?.clearSelection()
+                    actionMode = null
+
+                    refrescaPantalla()
+
+                    Snackbar.make(
+                        binding.root,
+                        "Disponibilidad Modificada",
+                        Snackbar.LENGTH_LONG
+                    ).show()
+
+                } else {
+                    Snackbar.make(
+                        binding.root,
+                        "Ha habido un error al modificar",
+                        Snackbar.LENGTH_LONG
+                    ).show()
+                }
+
+            } catch (e: SocketTimeoutException) {
+                Toast.makeText(activity, "Error al acceder a la base de datos", Toast.LENGTH_SHORT)
+                    .show()
             }
         }
     }
@@ -502,11 +565,23 @@ class FragmentHorarios : Fragment(), View.OnClickListener {
         var job: ArrayList<Disponibilidad>
         CoroutineScope(Dispatchers.Main).launch {
 
-            job = ApiRestAdapter.cargarHorariosDeshabilitados().await()
+            try {
 
-            listaNoDisponibilidad = job
+                job = ApiRestAdapter.cargarHorariosDeshabilitados().await()
 
-            updateRecyclerData(listaNoDisponibilidad)
+                listaNoDisponibilidad = job
+
+                updateRecyclerData(listaNoDisponibilidad)
+
+            } catch (e: SocketTimeoutException) {
+                Toast.makeText(activity, "Error al acceder a la base de datos", Toast.LENGTH_SHORT)
+                    .show()
+            } catch (e: IllegalStateException) {
+                Toast.makeText(activity, "Debe reiniciar la sesión", Toast.LENGTH_LONG)
+                    .show()
+
+                navegarInicio()
+            }
         }
     }
 
@@ -524,5 +599,12 @@ class FragmentHorarios : Fragment(), View.OnClickListener {
         super.onSaveInstanceState(outState)
         if (outState != null)
             tracker?.onSaveInstanceState(outState)
+    }
+
+    fun navegarInicio(){
+        val contextoFragment = this
+        MainActivity.autorizado = false
+        val navController = NavHostFragment.findNavController(contextoFragment)
+        navController.navigate(R.id.action_global_fragmentInicio2)
     }
 }

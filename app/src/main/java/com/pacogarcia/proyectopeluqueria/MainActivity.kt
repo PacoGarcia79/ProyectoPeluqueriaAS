@@ -24,6 +24,7 @@ import com.pacogarcia.proyectopeluqueria.viewmodel.ItemViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import java.net.SocketTimeoutException
 
 
 class MainActivity : AppCompatActivity(),
@@ -213,21 +214,33 @@ class MainActivity : AppCompatActivity(),
     private fun logout() {
 
         CoroutineScope(Dispatchers.Main).launch {
-            val resultado = ApiRestAdapter.logout().await()
 
-            if (resultado.usuario!!.isEmpty()) {
+            try {
 
-                autorizado = false
+                val resultado = ApiRestAdapter.logout().await()
 
+                if (resultado.usuario!!.isEmpty()) {
+
+                    autorizado = false
+
+                    Toast.makeText(
+                        applicationContext,
+                        "Has cerrado la sesión",
+                        Toast.LENGTH_SHORT
+                    ).show()
+
+                    cierraDrawer()
+
+                    navController.navigate(R.id.action_global_fragmentInicio2)
+                }
+
+            } catch (e: SocketTimeoutException) {
                 Toast.makeText(
                     applicationContext,
-                    "Has cerrado la sesión",
+                    "Error al acceder a la base de datos",
                     Toast.LENGTH_SHORT
-                ).show()
-
-                cierraDrawer()
-
-                navController.navigate(R.id.action_global_fragmentInicio2)
+                )
+                    .show()
             }
         }
     }

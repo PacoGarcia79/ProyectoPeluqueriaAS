@@ -6,6 +6,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.SearchView
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
@@ -20,6 +21,7 @@ import com.pacogarcia.proyectopeluqueria.modelos.Producto
 import com.pacogarcia.proyectopeluqueria.modelos.ProductoGrupo
 import com.pacogarcia.proyectopeluqueria.viewmodel.ItemViewModel
 import kotlinx.coroutines.*
+import java.net.SocketTimeoutException
 
 /**
  * Fragmento para la gestión del listado de grupos de productos
@@ -150,6 +152,18 @@ class FragmentGrupoProductos : Fragment(), View.OnClickListener {
                     iniciaAdaptadorRecycler(result)
                     MainActivity.productoGruposCargados = true
 
+                } catch (e: SocketTimeoutException) {
+                    Toast.makeText(
+                        activity,
+                        "Error al acceder a la base de datos",
+                        Toast.LENGTH_SHORT
+                    )
+                        .show()
+                } catch (e: IllegalStateException) {
+                    Toast.makeText(activity, "Debe reiniciar la sesión", Toast.LENGTH_LONG)
+                        .show()
+
+                    navegarInicio()
                 } finally {
                     // when deferred finishes and exits try block finally
                     // will be invoked and we can cancel the progress dialog
@@ -159,10 +173,26 @@ class FragmentGrupoProductos : Fragment(), View.OnClickListener {
             } else {
                 // if deferred completed already withing the wait time, skip
                 // showing the progress dialog and post the deferred result
-                val result = deferred.await()
-                MainActivity.productoGrupos = result
-                iniciaAdaptadorRecycler(result)
-                MainActivity.productoGruposCargados = true
+                try {
+
+                    val result = deferred.await()
+                    MainActivity.productoGrupos = result
+                    iniciaAdaptadorRecycler(result)
+                    MainActivity.productoGruposCargados = true
+
+                } catch (e: SocketTimeoutException) {
+                    Toast.makeText(
+                        activity,
+                        "Error al acceder a la base de datos",
+                        Toast.LENGTH_SHORT
+                    )
+                        .show()
+                } catch (e: IllegalStateException) {
+                    Toast.makeText(activity, "Debe reiniciar la sesión", Toast.LENGTH_LONG)
+                        .show()
+
+                    navegarInicio()
+                }
             }
         }
     }
@@ -183,5 +213,12 @@ class FragmentGrupoProductos : Fragment(), View.OnClickListener {
             recycler.layoutManager =
                 GridLayoutManager(activity, 1)
         }
+    }
+
+    fun navegarInicio() {
+        val contextoFragment = this
+        MainActivity.autorizado = false
+        val navController = NavHostFragment.findNavController(contextoFragment)
+        navController.navigate(R.id.action_global_fragmentInicio2)
     }
 }

@@ -21,6 +21,7 @@ import com.pacogarcia.proyectopeluqueria.viewmodel.ItemViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import java.net.SocketTimeoutException
 
 /**
  * Diálogo para el login o el registro.
@@ -98,37 +99,43 @@ class DialogoLogin : DialogFragment(), View.OnClickListener {
      */
     private fun autorizar(usuario: Usuario) {
         CoroutineScope(Dispatchers.Main).launch {
-            val resultado = ApiRestAdapter.autorizaUsuario(
-                usuario
-            ).await()
+            try{
+                val resultado = ApiRestAdapter.autorizaUsuario(
+                    usuario
+                ).await()
 
-            if (!resultado.usuario!!.isEmpty()) {
+                if (!resultado.usuario!!.isEmpty()) {
 
-                MainActivity.autorizado = true
+                    MainActivity.autorizado = true
 
-                usuario.nombre = resultado.nombre
-                usuario.idUsuario = resultado.idUsuario
-                usuario.rol = enumValueOf<Roles>(resultado.rol.toString().uppercase())
-                model.rol = usuario.rol
-                MainActivity.rol = usuario.rol
-                model.setUsuario(usuario)
-                getUsuarioIdentificado(resultado.idUsuario!!)
+                    usuario.nombre = resultado.nombre
+                    usuario.idUsuario = resultado.idUsuario
+                    usuario.rol = enumValueOf<Roles>(resultado.rol.toString().uppercase())
+                    model.rol = usuario.rol
+                    MainActivity.rol = usuario.rol
+                    model.setUsuario(usuario)
+                    getUsuarioIdentificado(resultado.idUsuario!!)
 
-                val navController = NavHostFragment.findNavController(contextoFragment)
+                    val navController = NavHostFragment.findNavController(contextoFragment)
 
-                actividadPrincipal.modificaDrawer()
-                actividadPrincipal.enableDrawer()
+                    actividadPrincipal.modificaDrawer()
+                    actividadPrincipal.enableDrawer()
 
-                Toast.makeText(
-                    requireContext(),
-                    "¡Bienvenido/a, " + usuario.nombre + "!",
-                    Toast.LENGTH_SHORT
-                ).show()
-                navController.navigate(R.id.action_dialogoLogin_to_fragmentInicio2)
+                    Toast.makeText(
+                        requireContext(),
+                        "¡Bienvenido/a, " + usuario.nombre + "!",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                    navController.navigate(R.id.action_dialogoLogin_to_fragmentInicio2)
 
-            } else {
-                Toast.makeText(activity, "Datos erróneos", Toast.LENGTH_SHORT).show()
+                } else {
+                    Toast.makeText(activity, "Datos erróneos", Toast.LENGTH_SHORT).show()
+                }
             }
+            catch(e: SocketTimeoutException){
+                Toast.makeText(activity, "Error al acceder a la base de datos", Toast.LENGTH_SHORT).show()
+            }
+
         }
     }
 

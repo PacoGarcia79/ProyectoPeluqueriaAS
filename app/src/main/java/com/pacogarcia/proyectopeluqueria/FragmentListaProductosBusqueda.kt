@@ -16,13 +16,13 @@ import androidx.navigation.fragment.NavHostFragment
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.google.android.material.snackbar.Snackbar
 import com.pacogarcia.proyectopeluqueria.clasesrecycler.AdaptadorListaProductos
 import com.pacogarcia.proyectopeluqueria.databinding.FragmentListaProductosBusquedaBinding
 import com.pacogarcia.proyectopeluqueria.dialogos.ProgressDialogo
 import com.pacogarcia.proyectopeluqueria.modelos.Producto
 import com.pacogarcia.proyectopeluqueria.viewmodel.ItemViewModel
 import kotlinx.coroutines.*
+import java.net.SocketTimeoutException
 
 /**
  * Fragmento para la gestión del listado de productos resultante de la búsqueda
@@ -50,8 +50,9 @@ class FragmentListaProductosBusqueda : Fragment(), View.OnClickListener {
             // We use a String here, but any type that can be put in a Bundle is supported
             val result = bundle.getBoolean("bundleBusqueda")
             // Do something with the result
-            if(result){
-                val producto = model.getProductosPorBusqueda().value!!.get(model.posicionProductoBusqueda)
+            if (result) {
+                val producto =
+                    model.getProductosPorBusqueda().value!!.get(model.posicionProductoBusqueda)
                 producto.stock = producto.stock?.minus(1)
                 adaptador.notifyItemChanged(model.posicionProductoBusqueda)
             }
@@ -76,10 +77,9 @@ class FragmentListaProductosBusqueda : Fragment(), View.OnClickListener {
          * los carga desde el API.
          * En caso contrario, carga el adaptador con los datos que existen en el listado.
          */
-        if(model.getProductosPorBusqueda().value!!.size == 0){
+        if (model.getProductosPorBusqueda().value!!.size == 0) {
             getProductosSearch(model.query)
-        }
-        else{
+        } else {
             iniciaAdaptadorRecycler(model.getProductosPorBusqueda().value!!)
         }
 
@@ -88,7 +88,7 @@ class FragmentListaProductosBusqueda : Fragment(), View.OnClickListener {
          */
         binding.searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String): Boolean {
-                val listaNueva : ArrayList<Producto> = ArrayList()
+                val listaNueva: ArrayList<Producto> = ArrayList()
                 model.setProductosPorBusqueda(listaNueva)
                 model.query = query
 
@@ -115,8 +115,12 @@ class FragmentListaProductosBusqueda : Fragment(), View.OnClickListener {
                             val result = deferred.await()
                             model.setProductosPorBusqueda(result)
 
-                            if(model.getProductosPorBusqueda().value!!.size == 0){
-                                Toast.makeText(requireContext(), "No hay resultados", Toast.LENGTH_LONG).show()
+                            if (model.getProductosPorBusqueda().value!!.size == 0) {
+                                Toast.makeText(
+                                    requireContext(),
+                                    "No hay resultados",
+                                    Toast.LENGTH_LONG
+                                ).show()
                             }
 
                             updateRecyclerData(model.getProductosPorBusqueda().value!!)
@@ -133,8 +137,9 @@ class FragmentListaProductosBusqueda : Fragment(), View.OnClickListener {
                         val result = deferred.await()
                         model.setProductosPorBusqueda(result)
 
-                        if(model.getProductosPorBusqueda().value!!.size == 0){
-                            Toast.makeText(requireContext(), "No hay resultados", Toast.LENGTH_LONG).show()
+                        if (model.getProductosPorBusqueda().value!!.size == 0) {
+                            Toast.makeText(requireContext(), "No hay resultados", Toast.LENGTH_LONG)
+                                .show()
                         }
 
                         updateRecyclerData(model.getProductosPorBusqueda().value!!)
@@ -181,12 +186,25 @@ class FragmentListaProductosBusqueda : Fragment(), View.OnClickListener {
                     val result = deferred.await()
                     model.setProductosPorBusqueda(result)
 
-                    if(model.getProductosPorBusqueda().value!!.size == 0){
-                        Toast.makeText(requireContext(), "No hay resultados", Toast.LENGTH_LONG).show()
+                    if (model.getProductosPorBusqueda().value!!.size == 0) {
+                        Toast.makeText(requireContext(), "No hay resultados", Toast.LENGTH_LONG)
+                            .show()
                     }
 
                     iniciaAdaptadorRecycler(model.getProductosPorBusqueda().value!!)
 
+                } catch (e: SocketTimeoutException) {
+                    Toast.makeText(
+                        activity,
+                        "Error al acceder a la base de datos",
+                        Toast.LENGTH_SHORT
+                    )
+                        .show()
+                } catch (e: IllegalStateException) {
+                    Toast.makeText(activity, "Debe reiniciar la sesión", Toast.LENGTH_LONG)
+                        .show()
+
+                    navegarInicio()
                 } finally {
                     // when deferred finishes and exits try block finally
                     // will be invoked and we can cancel the progress dialog
@@ -196,14 +214,30 @@ class FragmentListaProductosBusqueda : Fragment(), View.OnClickListener {
             } else {
                 // if deferred completed already withing the wait time, skip
                 // showing the progress dialog and post the deferred result
-                val result = deferred.await()
-                model.setProductosPorBusqueda(result)
+                try {
 
-                if(model.getProductosPorBusqueda().value!!.size == 0){
-                    Toast.makeText(requireContext(), "No hay resultados", Toast.LENGTH_LONG).show()
+                    val result = deferred.await()
+                    model.setProductosPorBusqueda(result)
+
+                    if (model.getProductosPorBusqueda().value!!.size == 0) {
+                        Toast.makeText(requireContext(), "No hay resultados", Toast.LENGTH_LONG).show()
+                    }
+
+                    iniciaAdaptadorRecycler(model.getProductosPorBusqueda().value!!)
+
+                } catch (e: SocketTimeoutException) {
+                    Toast.makeText(
+                        activity,
+                        "Error al acceder a la base de datos",
+                        Toast.LENGTH_SHORT
+                    )
+                        .show()
+                } catch (e: IllegalStateException) {
+                    Toast.makeText(activity, "Debe reiniciar la sesión", Toast.LENGTH_LONG)
+                        .show()
+
+                    navegarInicio()
                 }
-
-                iniciaAdaptadorRecycler(model.getProductosPorBusqueda().value!!)
             }
         }
     }
@@ -219,7 +253,8 @@ class FragmentListaProductosBusqueda : Fragment(), View.OnClickListener {
         recycler.setHasFixedSize(true)
         recycler.adapter = adaptador
         if (context?.resources!!
-                .configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+                .configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+        ) {
             recycler.layoutManager =
                 GridLayoutManager(activity, 2)
         } else {
@@ -270,5 +305,10 @@ class FragmentListaProductosBusqueda : Fragment(), View.OnClickListener {
         }
     }
 
-
+    fun navegarInicio() {
+        val contextoFragment = this
+        MainActivity.autorizado = false
+        val navController = NavHostFragment.findNavController(contextoFragment)
+        navController.navigate(R.id.action_global_fragmentInicio2)
+    }
 }

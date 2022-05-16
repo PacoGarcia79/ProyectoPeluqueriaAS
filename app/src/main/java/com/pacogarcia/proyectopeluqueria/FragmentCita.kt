@@ -11,6 +11,7 @@ import android.widget.*
 import androidx.annotation.RequiresApi
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.navigation.fragment.NavHostFragment
 import com.google.android.material.chip.Chip
 import com.google.android.material.textfield.TextInputEditText
 import com.pacogarcia.proyectopeluqueria.R.*
@@ -22,13 +23,15 @@ import com.wdullaer.materialdatetimepicker.date.DatePickerDialog
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import java.net.SocketTimeoutException
 import java.time.LocalDateTime
 import java.util.*
 
 /**
  * Fragmento para la gestión de las citas
  */
-class FragmentCita : Fragment(), View.OnClickListener, AdapterView.OnItemSelectedListener, DatePickerDialog.OnDateSetListener {
+class FragmentCita : Fragment(), View.OnClickListener, AdapterView.OnItemSelectedListener,
+    DatePickerDialog.OnDateSetListener {
 
     private lateinit var binding: FragmentCitaBinding
     private lateinit var spinner: Spinner
@@ -41,7 +44,7 @@ class FragmentCita : Fragment(), View.OnClickListener, AdapterView.OnItemSelecte
     var fechaSeleccionada: String = ""
     var fechaComienzoBusquedaOcupadas = ""
     var cadenaStringServicios: String = ""
-    var opcionCita : OpcionesCita = OpcionesCita.HORA
+    var opcionCita: OpcionesCita = OpcionesCita.HORA
 
     var listaCitasString: ArrayList<String> = ArrayList()
     var listaHorariosLibres: ArrayList<Horario> = ArrayList()
@@ -49,7 +52,7 @@ class FragmentCita : Fragment(), View.OnClickListener, AdapterView.OnItemSelecte
     var listaEmpleadosDisponiblesOpcionProfesional: ArrayList<Usuario> = ArrayList()
     var listaServiciosPorEmpleado: ArrayList<Servicio> = ArrayList()
     var listaFechasOcupadas: ArrayList<Date> = ArrayList()
-    var arrayCalendarFechasOcupadas : Array<Calendar> = arrayOf()
+    var arrayCalendarFechasOcupadas: Array<Calendar> = arrayOf()
 
 
     @RequiresApi(Build.VERSION_CODES.O)
@@ -68,13 +71,13 @@ class FragmentCita : Fragment(), View.OnClickListener, AdapterView.OnItemSelecte
         fechaSeleccionadaInput = binding.fechaSeleccionadaInput
         fechaSeleccionadaInput.setOnClickListener(this)
 
-        fechaComienzoBusquedaOcupadas = FechasHorasUtilidad.formatLocalDateTimeParaMySQL(LocalDateTime.now())
+        fechaComienzoBusquedaOcupadas =
+            FechasHorasUtilidad.formatLocalDateTimeParaMySQL(LocalDateTime.now())
         cargarFechasOcupadas()
 
-        if(model.rol != Roles.CLIENTE){
+        if (model.rol != Roles.CLIENTE) {
             cargarClientes()
-        }
-        else{
+        } else {
             binding.bannerCliente.visibility = View.GONE
             binding.clientesSpinner.visibility = View.GONE
         }
@@ -161,12 +164,12 @@ class FragmentCita : Fragment(), View.OnClickListener, AdapterView.OnItemSelecte
      * Obtiene la cadena de string con los ids de los servicios separados por coma
      * a partir de la MutableList de ids
      */
-    fun obtieneListadoServicios(lista : MutableList<Int>): String {
+    fun obtieneListadoServicios(lista: MutableList<Int>): String {
         val sb = StringBuilder()
         for (i in 0 until lista.size) {
             if (i < lista.size - 1) {
                 sb.append(lista[i].toString()).append(",")
-            } else{
+            } else {
                 sb.append(lista[i].toString())
             }
         }
@@ -178,12 +181,11 @@ class FragmentCita : Fragment(), View.OnClickListener, AdapterView.OnItemSelecte
         when (p0) {
             binding.botonReservar -> {
 
-                val checkedChipIds : MutableList<Int>
+                val checkedChipIds: MutableList<Int>
 
-                if(opcionCita == OpcionesCita.HORA){
+                if (opcionCita == OpcionesCita.HORA) {
                     checkedChipIds = binding.chipGroupServiciosOpcionHora.checkedChipIds
-                }
-                else{
+                } else {
                     checkedChipIds = binding.chipGroupServiciosOpcionProfesional.checkedChipIds
                 }
 
@@ -192,7 +194,7 @@ class FragmentCita : Fragment(), View.OnClickListener, AdapterView.OnItemSelecte
 
             }
             //Selecciona las fechas no disponibles y muestra el calendario con un máximo de 60 días.
-            fechaSeleccionadaInput ->{
+            fechaSeleccionadaInput -> {
                 val now = Calendar.getInstance()
                 val dpd = DatePickerDialog.newInstance(
                     this,
@@ -221,9 +223,9 @@ class FragmentCita : Fragment(), View.OnClickListener, AdapterView.OnItemSelecte
      * Obtiene el array de fechas no disponibles en formato Calendar, necesario para
      * asignarlo a disableDays del DatePickerDialog
      */
-    fun llenaArrayCalendarFechasOcupadas(){
-        val listaCalendarFechasOcupadas : ArrayList<Calendar> = ArrayList()
-        var tCalendar : Calendar
+    fun llenaArrayCalendarFechasOcupadas() {
+        val listaCalendarFechasOcupadas: ArrayList<Calendar> = ArrayList()
+        var tCalendar: Calendar
         listaFechasOcupadas.forEach {
             tCalendar = Calendar.getInstance()
             tCalendar.time = it
@@ -241,11 +243,24 @@ class FragmentCita : Fragment(), View.OnClickListener, AdapterView.OnItemSelecte
         var job: ArrayList<Date>
         CoroutineScope(Dispatchers.Main).launch {
 
-            job = ApiRestAdapter.cargarFechasOcupadas(fechaComienzoBusquedaOcupadas)
-                .await()
+            try {
 
-            listaFechasOcupadas = job
-            llenaArrayCalendarFechasOcupadas()
+                job = ApiRestAdapter.cargarFechasOcupadas(fechaComienzoBusquedaOcupadas)
+                    .await()
+
+                listaFechasOcupadas = job
+                llenaArrayCalendarFechasOcupadas()
+
+            } catch (e: SocketTimeoutException) {
+                Toast.makeText(activity, "Error al acceder a la base de datos", Toast.LENGTH_SHORT)
+                    .show()
+            } catch (e: IllegalStateException) {
+                Toast.makeText(activity, "Debe reiniciar la sesión", Toast.LENGTH_LONG)
+                    .show()
+
+                navegarInicio()
+            }
+
         }
     }
 
@@ -257,34 +272,48 @@ class FragmentCita : Fragment(), View.OnClickListener, AdapterView.OnItemSelecte
         var job: ArrayList<Usuario>
         CoroutineScope(Dispatchers.Main).launch {
 
-            job =
-                ApiRestAdapter.cargarEmpleadosDisponiblesOpcionHora(idHorarioSeleccionado, fechaSeleccionada)
-                    .await()
+            try {
 
-            listaEmpleadosDisponiblesOpcionHora = job
+                job =
+                    ApiRestAdapter.cargarEmpleadosDisponiblesOpcionHora(
+                        idHorarioSeleccionado,
+                        fechaSeleccionada
+                    )
+                        .await()
 
-            binding.bannerServicioOpcionHora.visibility = View.GONE
-            binding.chipGroupServiciosOpcionHora.visibility = View.GONE
-            binding.chipGroupServiciosOpcionHora.clearCheck()
-            binding.chipGroupServiciosOpcionHora.removeAllViews()
+                listaEmpleadosDisponiblesOpcionHora = job
 
-            binding.bannerProfesionalOpcionHora.visibility = View.VISIBLE
-            binding.chipGroupProfesionalesOpcionHora.visibility = View.VISIBLE
-            binding.chipGroupProfesionalesOpcionHora.clearCheck()
-            binding.chipGroupProfesionalesOpcionHora.removeAllViews()
+                binding.bannerServicioOpcionHora.visibility = View.GONE
+                binding.chipGroupServiciosOpcionHora.visibility = View.GONE
+                binding.chipGroupServiciosOpcionHora.clearCheck()
+                binding.chipGroupServiciosOpcionHora.removeAllViews()
 
-            for (empleado in listaEmpleadosDisponiblesOpcionHora) {
-                val chip =
-                    layoutInflater.inflate(
-                        layout.single_chip_layout,
-                        binding.chipGroupProfesionalesOpcionHora,
-                        false
-                    ) as Chip
-                chip.text = "${empleado.nombre} ${empleado.apellidos}"
-                chip.id = empleado.idUsuario!!
-                binding.chipGroupProfesionalesOpcionHora.addView(chip)
+                binding.bannerProfesionalOpcionHora.visibility = View.VISIBLE
+                binding.chipGroupProfesionalesOpcionHora.visibility = View.VISIBLE
+                binding.chipGroupProfesionalesOpcionHora.clearCheck()
+                binding.chipGroupProfesionalesOpcionHora.removeAllViews()
+
+                for (empleado in listaEmpleadosDisponiblesOpcionHora) {
+                    val chip =
+                        layoutInflater.inflate(
+                            layout.single_chip_layout,
+                            binding.chipGroupProfesionalesOpcionHora,
+                            false
+                        ) as Chip
+                    chip.text = "${empleado.nombre} ${empleado.apellidos}"
+                    chip.id = empleado.idUsuario!!
+                    binding.chipGroupProfesionalesOpcionHora.addView(chip)
+                }
+
+            } catch (e: SocketTimeoutException) {
+                Toast.makeText(activity, "Error al acceder a la base de datos", Toast.LENGTH_SHORT)
+                    .show()
+            } catch (e: IllegalStateException) {
+                Toast.makeText(activity, "Debe reiniciar la sesión", Toast.LENGTH_LONG)
+                    .show()
+
+                navegarInicio()
             }
-
         }
     }
 
@@ -292,38 +321,49 @@ class FragmentCita : Fragment(), View.OnClickListener, AdapterView.OnItemSelecte
      * Obtiene los empleados disponibles en la opción de citas por profesional
      * y rellena los chips. Si se selecciona un empleado distinto, resetea los chips de los servicios.
      */
-    fun cargarEmpleadosDisponiblesOpcionProfesional(){
+    fun cargarEmpleadosDisponiblesOpcionProfesional() {
         var job: ArrayList<Usuario>
         CoroutineScope(Dispatchers.Main).launch {
 
-            job =
-                ApiRestAdapter.cargarEmpleadosDisponiblesOpcionProfesional(fechaSeleccionada)
-                    .await()
+            try {
 
-            listaEmpleadosDisponiblesOpcionProfesional = job
+                job =
+                    ApiRestAdapter.cargarEmpleadosDisponiblesOpcionProfesional(fechaSeleccionada)
+                        .await()
 
-            binding.bannerServicioOpcionProfesional.visibility = View.GONE
-            binding.chipGroupServiciosOpcionProfesional.visibility = View.GONE
-            binding.chipGroupServiciosOpcionProfesional.clearCheck()
-            binding.chipGroupServiciosOpcionProfesional.removeAllViews()
+                listaEmpleadosDisponiblesOpcionProfesional = job
 
-            binding.bannerProfesionalOpcionProfesional.visibility = View.VISIBLE
-            binding.chipGroupProfesionalesOpcionProfesional.visibility = View.VISIBLE
-            binding.chipGroupProfesionalesOpcionProfesional.clearCheck()
-            binding.chipGroupProfesionalesOpcionProfesional.removeAllViews()
+                binding.bannerServicioOpcionProfesional.visibility = View.GONE
+                binding.chipGroupServiciosOpcionProfesional.visibility = View.GONE
+                binding.chipGroupServiciosOpcionProfesional.clearCheck()
+                binding.chipGroupServiciosOpcionProfesional.removeAllViews()
 
-            for (empleado in listaEmpleadosDisponiblesOpcionProfesional) {
-                val chip =
-                    layoutInflater.inflate(
-                        layout.single_chip_layout,
-                        binding.chipGroupProfesionalesOpcionHora,
-                        false
-                    ) as Chip
-                chip.text = "${empleado.nombre} ${empleado.apellidos}"
-                chip.id = empleado.idUsuario!!
-                binding.chipGroupProfesionalesOpcionProfesional.addView(chip)
+                binding.bannerProfesionalOpcionProfesional.visibility = View.VISIBLE
+                binding.chipGroupProfesionalesOpcionProfesional.visibility = View.VISIBLE
+                binding.chipGroupProfesionalesOpcionProfesional.clearCheck()
+                binding.chipGroupProfesionalesOpcionProfesional.removeAllViews()
+
+                for (empleado in listaEmpleadosDisponiblesOpcionProfesional) {
+                    val chip =
+                        layoutInflater.inflate(
+                            layout.single_chip_layout,
+                            binding.chipGroupProfesionalesOpcionHora,
+                            false
+                        ) as Chip
+                    chip.text = "${empleado.nombre} ${empleado.apellidos}"
+                    chip.id = empleado.idUsuario!!
+                    binding.chipGroupProfesionalesOpcionProfesional.addView(chip)
+                }
+
+            } catch (e: SocketTimeoutException) {
+                Toast.makeText(activity, "Error al acceder a la base de datos", Toast.LENGTH_SHORT)
+                    .show()
+            } catch (e: IllegalStateException) {
+                Toast.makeText(activity, "Debe reiniciar la sesión", Toast.LENGTH_LONG)
+                    .show()
+
+                navegarInicio()
             }
-
         }
     }
 
@@ -334,52 +374,61 @@ class FragmentCita : Fragment(), View.OnClickListener, AdapterView.OnItemSelecte
         var job: ArrayList<Servicio>
         CoroutineScope(Dispatchers.Main).launch {
 
-            job = ApiRestAdapter.cargarServiciosPorEmpleado(idEmpleadoSeleccionado).await()
+            try {
 
-            listaServiciosPorEmpleado = job
+                job = ApiRestAdapter.cargarServiciosPorEmpleado(idEmpleadoSeleccionado).await()
 
-            if(opcionCita == OpcionesCita.HORA){
-                binding.bannerServicioOpcionHora.visibility = View.VISIBLE
-                binding.chipGroupServiciosOpcionHora.visibility = View.VISIBLE
-                binding.chipGroupServiciosOpcionHora.clearCheck()
-                binding.chipGroupServiciosOpcionHora.removeAllViews()
-            }
-            else{
-                binding.bannerServicioOpcionProfesional.visibility = View.VISIBLE
-                binding.chipGroupServiciosOpcionProfesional.visibility = View.VISIBLE
-                binding.chipGroupServiciosOpcionProfesional.clearCheck()
-                binding.chipGroupServiciosOpcionProfesional.removeAllViews()
-            }
+                listaServiciosPorEmpleado = job
 
-            var chip : Chip
-            for (servicio in listaServiciosPorEmpleado) {
-                if(opcionCita == OpcionesCita.HORA){
-                    chip =
-                        layoutInflater.inflate(
-                            layout.single_chip_layout,
-                            binding.chipGroupServiciosOpcionHora,
-                            false
-                        ) as Chip
-                }
-                else{
-                    chip =
-                        layoutInflater.inflate(
-                            layout.single_chip_layout,
-                            binding.chipGroupServiciosOpcionProfesional,
-                            false
-                        ) as Chip
+                if (opcionCita == OpcionesCita.HORA) {
+                    binding.bannerServicioOpcionHora.visibility = View.VISIBLE
+                    binding.chipGroupServiciosOpcionHora.visibility = View.VISIBLE
+                    binding.chipGroupServiciosOpcionHora.clearCheck()
+                    binding.chipGroupServiciosOpcionHora.removeAllViews()
+                } else {
+                    binding.bannerServicioOpcionProfesional.visibility = View.VISIBLE
+                    binding.chipGroupServiciosOpcionProfesional.visibility = View.VISIBLE
+                    binding.chipGroupServiciosOpcionProfesional.clearCheck()
+                    binding.chipGroupServiciosOpcionProfesional.removeAllViews()
                 }
 
-                chip.text = "${servicio.nombre} - ${servicio.precio.toString()}€"
-                chip.id = servicio.idServicio!!
+                var chip: Chip
+                for (servicio in listaServiciosPorEmpleado) {
+                    if (opcionCita == OpcionesCita.HORA) {
+                        chip =
+                            layoutInflater.inflate(
+                                layout.single_chip_layout,
+                                binding.chipGroupServiciosOpcionHora,
+                                false
+                            ) as Chip
+                    } else {
+                        chip =
+                            layoutInflater.inflate(
+                                layout.single_chip_layout,
+                                binding.chipGroupServiciosOpcionProfesional,
+                                false
+                            ) as Chip
+                    }
 
-                if(opcionCita == OpcionesCita.HORA){
-                    binding.chipGroupServiciosOpcionHora.addView(chip)
-                }
-                else{
-                    binding.chipGroupServiciosOpcionProfesional.addView(chip)
+                    chip.text = "${servicio.nombre} - ${servicio.precio.toString()}€"
+                    chip.id = servicio.idServicio!!
+
+                    if (opcionCita == OpcionesCita.HORA) {
+                        binding.chipGroupServiciosOpcionHora.addView(chip)
+                    } else {
+                        binding.chipGroupServiciosOpcionProfesional.addView(chip)
+                    }
+
                 }
 
+            } catch (e: SocketTimeoutException) {
+                Toast.makeText(activity, "Error al acceder a la base de datos", Toast.LENGTH_SHORT)
+                    .show()
+            } catch (e: IllegalStateException) {
+                Toast.makeText(activity, "Debe reiniciar la sesión", Toast.LENGTH_LONG)
+                    .show()
+
+                navegarInicio()
             }
         }
     }
@@ -391,25 +440,37 @@ class FragmentCita : Fragment(), View.OnClickListener, AdapterView.OnItemSelecte
         var job: ArrayList<Horario>
         CoroutineScope(Dispatchers.Main).launch {
 
-            job = ApiRestAdapter.cargarHorariosLibresDia(fechaSeleccionada).await()
+            try {
 
-            listaHorariosLibres = job
+                job = ApiRestAdapter.cargarHorariosLibresDia(fechaSeleccionada).await()
 
-            binding.bannerHoraOpcionHora.visibility = View.VISIBLE
-            binding.chipGroupHoraOpcionHora.visibility = View.VISIBLE
-            binding.chipGroupHoraOpcionHora.clearCheck()
-            binding.chipGroupHoraOpcionHora.removeAllViews()
+                listaHorariosLibres = job
 
-            for (hora in listaHorariosLibres) {
-                val chip =
-                    layoutInflater.inflate(
-                        layout.single_chip_layout,
-                        binding.chipGroupHoraOpcionHora,
-                        false
-                    ) as Chip
-                chip.text = hora.hora?.substringBeforeLast(":")
-                chip.id = hora.idHorario!!
-                binding.chipGroupHoraOpcionHora.addView(chip)
+                binding.bannerHoraOpcionHora.visibility = View.VISIBLE
+                binding.chipGroupHoraOpcionHora.visibility = View.VISIBLE
+                binding.chipGroupHoraOpcionHora.clearCheck()
+                binding.chipGroupHoraOpcionHora.removeAllViews()
+
+                for (hora in listaHorariosLibres) {
+                    val chip =
+                        layoutInflater.inflate(
+                            layout.single_chip_layout,
+                            binding.chipGroupHoraOpcionHora,
+                            false
+                        ) as Chip
+                    chip.text = hora.hora?.substringBeforeLast(":")
+                    chip.id = hora.idHorario!!
+                    binding.chipGroupHoraOpcionHora.addView(chip)
+                }
+
+            } catch (e: SocketTimeoutException) {
+                Toast.makeText(activity, "Error al acceder a la base de datos", Toast.LENGTH_SHORT)
+                    .show()
+            } catch (e: IllegalStateException) {
+                Toast.makeText(activity, "Debe reiniciar la sesión", Toast.LENGTH_LONG)
+                    .show()
+
+                navegarInicio()
             }
         }
     }
@@ -421,25 +482,40 @@ class FragmentCita : Fragment(), View.OnClickListener, AdapterView.OnItemSelecte
         var job: ArrayList<Horario>
         CoroutineScope(Dispatchers.Main).launch {
 
-            job = ApiRestAdapter.cargarHorariosLibresEmpleadosFecha(idEmpleadoSeleccionado, fechaSeleccionada).await()
+            try {
 
-            listaHorariosLibres = job
+                job = ApiRestAdapter.cargarHorariosLibresEmpleadosFecha(
+                    idEmpleadoSeleccionado,
+                    fechaSeleccionada
+                ).await()
 
-            binding.bannerHoraOpcionProfesional.visibility = View.VISIBLE
-            binding.chipGroupHoraOpcionProfesional.visibility = View.VISIBLE
-            binding.chipGroupHoraOpcionProfesional.clearCheck()
-            binding.chipGroupHoraOpcionProfesional.removeAllViews()
+                listaHorariosLibres = job
 
-            for (hora in listaHorariosLibres) {
-                val chip =
-                    layoutInflater.inflate(
-                        layout.single_chip_layout,
-                        binding.chipGroupHoraOpcionProfesional,
-                        false
-                    ) as Chip
-                chip.text = hora.hora?.substringBeforeLast(":")
-                chip.id = hora.idHorario!!
-                binding.chipGroupHoraOpcionProfesional.addView(chip)
+                binding.bannerHoraOpcionProfesional.visibility = View.VISIBLE
+                binding.chipGroupHoraOpcionProfesional.visibility = View.VISIBLE
+                binding.chipGroupHoraOpcionProfesional.clearCheck()
+                binding.chipGroupHoraOpcionProfesional.removeAllViews()
+
+                for (hora in listaHorariosLibres) {
+                    val chip =
+                        layoutInflater.inflate(
+                            layout.single_chip_layout,
+                            binding.chipGroupHoraOpcionProfesional,
+                            false
+                        ) as Chip
+                    chip.text = hora.hora?.substringBeforeLast(":")
+                    chip.id = hora.idHorario!!
+                    binding.chipGroupHoraOpcionProfesional.addView(chip)
+                }
+
+            } catch (e: SocketTimeoutException) {
+                Toast.makeText(activity, "Error al acceder a la base de datos", Toast.LENGTH_SHORT)
+                    .show()
+            } catch (e: IllegalStateException) {
+                Toast.makeText(activity, "Debe reiniciar la sesión", Toast.LENGTH_LONG)
+                    .show()
+
+                navegarInicio()
             }
         }
     }
@@ -451,11 +527,23 @@ class FragmentCita : Fragment(), View.OnClickListener, AdapterView.OnItemSelecte
         var job: ArrayList<Usuario>
         CoroutineScope(Dispatchers.Main).launch {
 
-            job = ApiRestAdapter.cargarClientes().await()
+            try {
 
-            model.setClientes(job)
+                job = ApiRestAdapter.cargarClientes().await()
 
-            setSpinner()
+                model.setClientes(job)
+
+                setSpinner()
+
+            } catch (e: SocketTimeoutException) {
+                Toast.makeText(activity, "Error al acceder a la base de datos", Toast.LENGTH_SHORT)
+                    .show()
+            } catch (e: IllegalStateException) {
+                Toast.makeText(activity, "Debe reiniciar la sesión", Toast.LENGTH_LONG)
+                    .show()
+
+                navegarInicio()
+            }
         }
     }
 
@@ -463,37 +551,51 @@ class FragmentCita : Fragment(), View.OnClickListener, AdapterView.OnItemSelecte
      * Añade una nueva cita. Si la añade el empleado, se usará el id del cliente seleccionado. Si es el cliente, se usará
      * su id de usuario.
      */
-    fun addCita(){
+    fun addCita() {
 
         CoroutineScope(Dispatchers.Main).launch {
 
-            val resultado : MensajeGeneral?
+            try {
 
-            if(model.rol != Roles.CLIENTE){
-                resultado = ApiRestAdapter.addCita(idHorarioSeleccionado, idEmpleadoSeleccionado, fechaSeleccionada, idClienteSeleccionado, cadenaStringServicios).await()
+                val resultado: MensajeGeneral?
+
+                if (model.rol != Roles.CLIENTE) {
+                    resultado = ApiRestAdapter.addCita(
+                        idHorarioSeleccionado,
+                        idEmpleadoSeleccionado,
+                        fechaSeleccionada,
+                        idClienteSeleccionado,
+                        cadenaStringServicios
+                    ).await()
+                } else {
+                    resultado = ApiRestAdapter.addCita(
+                        idHorarioSeleccionado, idEmpleadoSeleccionado, fechaSeleccionada,
+                        model.getUsuario.value!!.idUsuario!!, cadenaStringServicios
+                    ).await()
+                }
+
+                if (resultado.mensaje.equals("Registro insertado")) {
+
+                    Toast.makeText(
+                        requireContext(),
+                        "Cita añadida",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                } else {
+                    Toast.makeText(
+                        activity,
+                        "No se ha podido añadir",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+
+                reseteaOpcionesModoHora()
+                reseteaOpcionesModoProfesional()
+
+            } catch (e: SocketTimeoutException) {
+                Toast.makeText(activity, "Error al acceder a la base de datos", Toast.LENGTH_SHORT)
+                    .show()
             }
-            else{
-                resultado = ApiRestAdapter.addCita(idHorarioSeleccionado, idEmpleadoSeleccionado, fechaSeleccionada,
-                    model.getUsuario.value!!.idUsuario!!, cadenaStringServicios).await()
-            }
-
-            if (resultado.mensaje.equals("Registro insertado")) {
-
-                Toast.makeText(
-                    requireContext(),
-                    "Cita añadida",
-                    Toast.LENGTH_SHORT
-                ).show()
-            } else {
-                Toast.makeText(
-                    activity,
-                    "No se ha podido añadir",
-                    Toast.LENGTH_SHORT
-                ).show()
-            }
-
-            reseteaOpcionesModoHora()
-            reseteaOpcionesModoProfesional()
         }
     }
 
@@ -577,21 +679,26 @@ class FragmentCita : Fragment(), View.OnClickListener, AdapterView.OnItemSelecte
         val date = dayOfMonth.toString() + "/" + (monthOfYear + 1).toString() + "/" + year
         val mes = (monthOfYear + 1).toString()
         var mesSeleccionado = ""
-        if(mes.length == 1){
+        if (mes.length == 1) {
             mesSeleccionado = "0" + (monthOfYear + 1).toString()
-        }
-        else{
+        } else {
             mesSeleccionado = (monthOfYear + 1).toString()
         }
         fechaSeleccionada = "$year-$mesSeleccionado-$dayOfMonth"
         fechaSeleccionadaInput.setText(date)
 
-        if(opcionCita == OpcionesCita.HORA){
+        if (opcionCita == OpcionesCita.HORA) {
             cargarHorariosLibresDia()
-        }
-        else{
+        } else {
             cargarEmpleadosDisponiblesOpcionProfesional()
         }
+    }
+
+    fun navegarInicio(){
+        val contextoFragment = this
+        MainActivity.autorizado = false
+        val navController = NavHostFragment.findNavController(contextoFragment)
+        navController.navigate(com.pacogarcia.proyectopeluqueria.R.id.action_global_fragmentInicio2)
     }
 }
 

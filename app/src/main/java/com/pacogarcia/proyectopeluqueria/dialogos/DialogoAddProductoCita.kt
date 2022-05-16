@@ -21,6 +21,7 @@ import com.pacogarcia.proyectopeluqueria.viewmodel.ItemViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import java.net.SocketTimeoutException
 import java.time.LocalDateTime
 
 /**
@@ -60,7 +61,7 @@ class DialogoAddProductoCita : DialogFragment(), View.OnClickListener,
         posicionProducto = args.getInt("posicionProducto")
         cantidadProducto = args.getInt("cantidad")
 
-        if(MainActivity.clickAddProductoCitaHolder){
+        if (MainActivity.clickAddProductoCitaHolder) {
             model.posicionProductoBusqueda = posicionProducto
         }
 
@@ -99,18 +100,25 @@ class DialogoAddProductoCita : DialogFragment(), View.OnClickListener,
         var job: ArrayList<Cita>
         CoroutineScope(Dispatchers.Main).launch {
 
-            job = when (model.rol) {
-                Roles.ADMIN -> {
-                    ApiRestAdapter.cargarCitas(fechaInicio, fechaFin, 0).await()
+            try {
+
+                job = when (model.rol) {
+                    Roles.ADMIN -> {
+                        ApiRestAdapter.cargarCitas(fechaInicio, fechaFin, 0).await()
+                    }
+                    else -> {
+                        ApiRestAdapter.cargarCitas(fechaInicio, fechaFin, idUsuario).await()
+                    }
                 }
-                else -> {
-                    ApiRestAdapter.cargarCitas(fechaInicio, fechaFin, idUsuario).await()
-                }
+
+                model.setCitas(job)
+
+                setSpinner()
+
+            } catch (e: SocketTimeoutException) {
+                Toast.makeText(activity, "Error al acceder a la base de datos", Toast.LENGTH_SHORT)
+                    .show()
             }
-
-            model.setCitas(job)
-
-            setSpinner()
         }
     }
 
@@ -164,44 +172,50 @@ class DialogoAddProductoCita : DialogFragment(), View.OnClickListener,
 
 
         CoroutineScope(Dispatchers.Main).launch {
-            val resultado =
-                ApiRestAdapter.addProductoCita(idCitaSeleccionada, idProducto, cantidadProducto)
-                    .await()
 
-            if (resultado.mensaje.equals("Registro insertado")) {
+            try {
 
-                Toast.makeText(
-                    requireContext(),
-                    "Producto añadido",
-                    Toast.LENGTH_SHORT
-                ).show()
+                val resultado =
+                    ApiRestAdapter.addProductoCita(idCitaSeleccionada, idProducto, cantidadProducto)
+                        .await()
+
+                if (resultado.mensaje.equals("Registro insertado")) {
+
+                    Toast.makeText(
+                        requireContext(),
+                        "Producto añadido",
+                        Toast.LENGTH_SHORT
+                    ).show()
 
 
-                /**
-                 * Uso setFragmentResult para pasar el resultado a los fragmentos que lo necesiten.
-                 * Se usa una request key y el bundle para pasar lo que se necesite
-                 */
+                    /**
+                     * Uso setFragmentResult para pasar el resultado a los fragmentos que lo necesiten.
+                     * Se usa una request key y el bundle para pasar lo que se necesite
+                     */
 
-                val result = true
-                if(MainActivity.clickAddProductoCitaHolder){
-                    setFragmentResult("busquedaKey", bundleOf("bundleBusqueda" to result))
-                    MainActivity.clickAddProductoCitaHolder = false
+                    val result = true
+                    if (MainActivity.clickAddProductoCitaHolder) {
+                        setFragmentResult("busquedaKey", bundleOf("bundleBusqueda" to result))
+                        MainActivity.clickAddProductoCitaHolder = false
+                    } else {
+                        setFragmentResult("requestKey", bundleOf("bundleKey" to result))
+                    }
+
+
+                } else {
+                    Toast.makeText(
+                        activity,
+                        "No se ha podido añadir",
+                        Toast.LENGTH_SHORT
+                    ).show()
                 }
-                else{
-                    setFragmentResult("requestKey", bundleOf("bundleKey" to result))
-                }
 
+                dialogo.dismiss()
 
-            } else {
-                Toast.makeText(
-                    activity,
-                    "No se ha podido añadir",
-                    Toast.LENGTH_SHORT
-                ).show()
+            } catch (e: SocketTimeoutException) {
+                Toast.makeText(activity, "Error al acceder a la base de datos", Toast.LENGTH_SHORT)
+                    .show()
             }
-
-
-            dialogo.dismiss()
         }
     }
 

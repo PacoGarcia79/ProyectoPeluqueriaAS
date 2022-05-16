@@ -3,10 +3,12 @@ package com.pacogarcia.proyectopeluqueria
 import android.os.Build
 import android.os.Bundle
 import android.view.*
+import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.appcompat.view.ActionMode
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.navigation.fragment.NavHostFragment
 import androidx.recyclerview.selection.SelectionPredicates
 import androidx.recyclerview.selection.SelectionTracker
 import androidx.recyclerview.selection.StableIdKeyProvider
@@ -27,6 +29,7 @@ import com.pacogarcia.proyectopeluqueria.databinding.FragmentReservasBinding
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import java.net.SocketTimeoutException
 import java.time.LocalDateTime
 
 /**
@@ -69,7 +72,7 @@ class FragmentReservas : Fragment(), View.OnClickListener {
                 Boolean {
             return when (item.itemId) {
                 R.id.delete -> {
-                    val lista : List<Long> = tracker?.selection?.sorted()?.reversed()!!
+                    val lista: List<Long> = tracker?.selection?.sorted()?.reversed()!!
 
                     val listasString = obtieneListaStringCitas(lista)
 
@@ -111,7 +114,11 @@ class FragmentReservas : Fragment(), View.OnClickListener {
         val local = LocalDateTime.now()
 
         // Carga las citas para la fecha actual y para el usuario, dependiendo del rol
-        getCitas(formatLocalDateTimeParaMySQL(local), formatLocalDateTimeParaMySQL(local), idUsuario)
+        getCitas(
+            formatLocalDateTimeParaMySQL(local),
+            formatLocalDateTimeParaMySQL(local),
+            idUsuario
+        )
 
         return binding.root
     }
@@ -139,8 +146,10 @@ class FragmentReservas : Fragment(), View.OnClickListener {
                     fechaFinPeriodo = it.second
 
                     val idUsuario = model.getUsuario.value?.idUsuario!!
-                    val inicioRangoFecha = FechasHorasUtilidad.convertirFechaMillAString(fechaComienzoPeriodo)
-                    val finRangoFecha = FechasHorasUtilidad.convertirFechaMillAString(fechaFinPeriodo)
+                    val inicioRangoFecha =
+                        FechasHorasUtilidad.convertirFechaMillAString(fechaComienzoPeriodo)
+                    val finRangoFecha =
+                        FechasHorasUtilidad.convertirFechaMillAString(fechaFinPeriodo)
 
                     refrescaListaCitas(inicioRangoFecha, finRangoFecha, idUsuario)
                 }
@@ -155,9 +164,9 @@ class FragmentReservas : Fragment(), View.OnClickListener {
      * elementos
      * @return cadena string con los ids
      */
-    fun obtieneListaStringCitas(lista : List<Long>) : String{
+    fun obtieneListaStringCitas(lista: List<Long>): String {
         val sb = StringBuilder()
-        val listaIdCitas : ArrayList<Int> = ArrayList()
+        val listaIdCitas: ArrayList<Int> = ArrayList()
 
         for (i in lista.indices) {
             listaIdCitas.add(citas[i].idCita!!)
@@ -231,24 +240,36 @@ class FragmentReservas : Fragment(), View.OnClickListener {
      */
     fun getCitas(fechaInicio: String, fechaFin: String, idUsuario: Int) {
         var job: ArrayList<Cita>
+
         CoroutineScope(Dispatchers.Main).launch {
 
-            job = when (model.rol) {
-                Roles.ADMIN -> {
-                    ApiRestAdapter.cargarCitas(fechaInicio, fechaFin, 0).await()
+            try {
+                job = when (model.rol) {
+                    Roles.ADMIN -> {
+                        ApiRestAdapter.cargarCitas(fechaInicio, fechaFin, 0).await()
+                    }
+                    else -> {
+                        ApiRestAdapter.cargarCitas(fechaInicio, fechaFin, idUsuario).await()
+                    }
                 }
-                else -> {
-                    ApiRestAdapter.cargarCitas(fechaInicio, fechaFin, idUsuario).await()
+
+                citas = job
+
+                if (citas.size == 0) {
+                    muestraSnackBarCitas(fechaInicio, fechaFin)
                 }
+
+                iniciaAdaptadorRecycler(citas)
+
+            } catch (e: SocketTimeoutException) {
+                Toast.makeText(activity, "Error al acceder a la base de datos", Toast.LENGTH_SHORT)
+                    .show()
+            } catch (e: IllegalStateException) {
+                Toast.makeText(activity, "Debe reiniciar la sesión", Toast.LENGTH_LONG)
+                    .show()
+
+                navegarInicio()
             }
-
-            citas = job
-
-            if(citas.size == 0){
-                muestraSnackBarCitas(fechaInicio, fechaFin)
-            }
-
-            iniciaAdaptadorRecycler(citas)
         }
     }
 
@@ -259,32 +280,39 @@ class FragmentReservas : Fragment(), View.OnClickListener {
      * @param lista lista de números de tipo long creada por el tracker y que va modificando conforme se seleccionan o deseleccionan
      * elementos
      */
-    private fun cancelaCitas(citasListaString: String, lista : List<Long>) {
+    private fun cancelaCitas(citasListaString: String, lista: List<Long>) {
         CoroutineScope(Dispatchers.Main).launch {
-            val resultado = ApiRestAdapter.cancelarCitas(citasListaString).await()
 
-            if (resultado.mensaje.equals("Registro/s actualizado/s")) {
+            try {
+                val resultado = ApiRestAdapter.cancelarCitas(citasListaString).await()
 
-                lista.forEach { id ->
-                    citas.removeAt(id.toInt())
+                if (resultado.mensaje.equals("Registro/s actualizado/s")) {
+
+                    lista.forEach { id ->
+                        citas.removeAt(id.toInt())
+                    }
+                    recycler.recycledViewPool.clear()
+                    adaptador.notifyDataSetChanged()
+                    tracker?.clearSelection()
+                    actionMode = null
+
+                    Snackbar.make(
+                        binding.root,
+                        "Cita/s cancelada/s",
+                        Snackbar.LENGTH_LONG
+                    ).show()
+
+                } else {
+                    Snackbar.make(
+                        binding.root,
+                        "No se ha podido cancelar",
+                        Snackbar.LENGTH_LONG
+                    ).show()
                 }
-                recycler.recycledViewPool.clear()
-                adaptador.notifyDataSetChanged()
-                tracker?.clearSelection()
-                actionMode = null
 
-                Snackbar.make(
-                    binding.root,
-                    "Cita/s cancelada/s",
-                    Snackbar.LENGTH_LONG
-                ).show()
-
-            } else {
-                Snackbar.make(
-                    binding.root,
-                    "No se ha podido cancelar",
-                    Snackbar.LENGTH_LONG
-                ).show()
+            } catch (e: SocketTimeoutException) {
+                Toast.makeText(activity, "Error al acceder a la base de datos", Toast.LENGTH_SHORT)
+                    .show()
             }
         }
     }
@@ -300,22 +328,32 @@ class FragmentReservas : Fragment(), View.OnClickListener {
         var job: ArrayList<Cita>
         CoroutineScope(Dispatchers.Main).launch {
 
-            job = when (model.rol) {
-                Roles.ADMIN -> {
-                    ApiRestAdapter.cargarCitas(fechaInicio, fechaFin, 0).await()
+            try {
+                job = when (model.rol) {
+                    Roles.ADMIN -> {
+                        ApiRestAdapter.cargarCitas(fechaInicio, fechaFin, 0).await()
+                    }
+                    else -> {
+                        ApiRestAdapter.cargarCitas(fechaInicio, fechaFin, idUsuario).await()
+                    }
                 }
-                else -> {
-                    ApiRestAdapter.cargarCitas(fechaInicio, fechaFin, idUsuario).await()
+
+                citas = job
+
+                if (citas.size == 0) {
+                    muestraSnackBarCitas(fechaInicio, fechaFin)
                 }
+
+                updateRecyclerData(citas)
+            } catch (e: SocketTimeoutException) {
+                Toast.makeText(activity, "Error al acceder a la base de datos", Toast.LENGTH_SHORT)
+                    .show()
+            } catch (e: IllegalStateException) {
+                Toast.makeText(activity, "Debe reiniciar la sesión", Toast.LENGTH_LONG)
+                    .show()
+
+                navegarInicio()
             }
-
-            citas = job
-
-            if(citas.size == 0){
-                muestraSnackBarCitas(fechaInicio, fechaFin)
-            }
-
-            updateRecyclerData(citas)
         }
     }
 
@@ -349,6 +387,13 @@ class FragmentReservas : Fragment(), View.OnClickListener {
         super.onSaveInstanceState(outState)
         if (outState != null)
             tracker?.onSaveInstanceState(outState)
+    }
+
+    fun navegarInicio(){
+        val contextoFragment = this
+        MainActivity.autorizado = false
+        val navController = NavHostFragment.findNavController(contextoFragment)
+        navController.navigate(R.id.action_global_fragmentInicio2)
     }
 
 

@@ -29,17 +29,17 @@ import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.constraintlayout.widget.ConstraintLayout
-import androidx.lifecycle.lifecycleScope
+import androidx.navigation.fragment.NavHostFragment
 import com.jakewharton.rxbinding2.widget.RxTextView
 import com.pacogarcia.proyectopeluqueria.clasesestaticas.Hash
 import com.pacogarcia.proyectopeluqueria.clasesestaticas.ImagenUtilidad
-import com.pacogarcia.proyectopeluqueria.dialogos.ProgressDialogo
 import com.pacogarcia.proyectopeluqueria.modelos.Usuario
 import io.reactivex.Observable
 import io.reactivex.ObservableTransformer
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import kotlinx.coroutines.*
+import java.net.SocketTimeoutException
 import java.util.concurrent.TimeUnit
 
 /**
@@ -381,23 +381,32 @@ class FragmentCuenta : Fragment(), View.OnClickListener {
      */
     private fun modificaUsuario(usuario: Usuario) {
         CoroutineScope(Dispatchers.Main).launch {
-            val resultado = ApiRestAdapter.modificarUsuario(usuario).await()
 
-            if (resultado.mensaje.equals("Registro actualizado")) {
+            try {
 
-                Toast.makeText(
-                    requireContext(),
-                    "Actualizado correctamente",
-                    Toast.LENGTH_SHORT
-                ).show()
-                getUsuarioDespuesModificar(model.getUsuario.value?.idUsuario!!)
-            } else {
-                Toast.makeText(
-                    activity,
-                    "No se ha podido actualizar",
-                    Toast.LENGTH_SHORT
-                ).show()
+                val resultado = ApiRestAdapter.modificarUsuario(usuario).await()
+
+                if (resultado.mensaje.equals("Registro actualizado")) {
+
+                    Toast.makeText(
+                        requireContext(),
+                        "Actualizado correctamente",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                    getUsuarioDespuesModificar(model.getUsuario.value?.idUsuario!!)
+                } else {
+                    Toast.makeText(
+                        activity,
+                        "No se ha podido actualizar",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+
+            } catch (e: SocketTimeoutException) {
+                Toast.makeText(activity, "Error al acceder a la base de datos", Toast.LENGTH_SHORT)
+                    .show()
             }
+
         }
     }
 
@@ -408,23 +417,33 @@ class FragmentCuenta : Fragment(), View.OnClickListener {
      */
     private fun modificaUsuarioPassword(usuario: Usuario) {
         CoroutineScope(Dispatchers.Main).launch {
-            val resultado = ApiRestAdapter.modificarUsuarioPassword(usuario).await()
 
-            if (resultado.mensaje.equals("Registro actualizado")) {
+            try {
 
-                Toast.makeText(
-                    requireContext(),
-                    "Actualizado correctamente",
-                    Toast.LENGTH_SHORT
-                ).show()
-                getUsuarioDespuesModificar(model.getUsuario.value?.idUsuario!!)
-            } else {
-                Toast.makeText(
-                    activity,
-                    "No se ha podido actualizar",
-                    Toast.LENGTH_SHORT
-                ).show()
+                val resultado = ApiRestAdapter.modificarUsuarioPassword(usuario).await()
+
+                if (resultado.mensaje.equals("Registro actualizado")) {
+
+                    Toast.makeText(
+                        requireContext(),
+                        "Actualizado correctamente",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                    getUsuarioDespuesModificar(model.getUsuario.value?.idUsuario!!)
+                } else {
+                    Toast.makeText(
+                        activity,
+                        "No se ha podido actualizar",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+
+            } catch (e: SocketTimeoutException) {
+                Toast.makeText(activity, "Error al acceder a la base de datos", Toast.LENGTH_SHORT)
+                    .show()
             }
+
+
         }
     }
 
@@ -454,25 +473,38 @@ class FragmentCuenta : Fragment(), View.OnClickListener {
      */
     fun getUsuarioDespuesModificar(idUsuario: Int) {
         CoroutineScope(Dispatchers.Main).launch {
-            val job = ApiRestAdapter.getUserData(idUsuario).await()
-            model.setUsuario(job)
 
-            setUserCard()
+            try {
 
-            if (!isFront) {
-                binding.cardFront.visibility = View.VISIBLE
-                front_anim.setTarget(back)
-                back_anim.setTarget(front)
-                back_anim.start()
-                front_anim.start()
-                isFront = true
+                val job = ApiRestAdapter.getUserData(idUsuario).await()
+                model.setUsuario(job)
 
-                Handler(Looper.getMainLooper()).postDelayed(
-                    {
-                        binding.cardBack.visibility = View.GONE
-                    },
-                    1400 // value in milliseconds
-                )
+                setUserCard()
+
+                if (!isFront) {
+                    binding.cardFront.visibility = View.VISIBLE
+                    front_anim.setTarget(back)
+                    back_anim.setTarget(front)
+                    back_anim.start()
+                    front_anim.start()
+                    isFront = true
+
+                    Handler(Looper.getMainLooper()).postDelayed(
+                        {
+                            binding.cardBack.visibility = View.GONE
+                        },
+                        1400 // value in milliseconds
+                    )
+                }
+
+            } catch (e: SocketTimeoutException) {
+                Toast.makeText(activity, "Error al acceder a la base de datos", Toast.LENGTH_SHORT)
+                    .show()
+            } catch (e: IllegalStateException) {
+                Toast.makeText(activity, "Debe reiniciar la sesión", Toast.LENGTH_LONG)
+                    .show()
+
+                navegarInicio()
             }
         }
     }
@@ -695,6 +727,13 @@ class FragmentCuenta : Fragment(), View.OnClickListener {
                 }
                 .toObservable()
         }
+    }
+
+    fun navegarInicio(){
+        val contextoFragment = this
+        MainActivity.autorizado = false
+        val navController = NavHostFragment.findNavController(contextoFragment)
+        navController.navigate(com.pacogarcia.proyectopeluqueria.R.id.action_global_fragmentInicio2)
     }
 
 }
