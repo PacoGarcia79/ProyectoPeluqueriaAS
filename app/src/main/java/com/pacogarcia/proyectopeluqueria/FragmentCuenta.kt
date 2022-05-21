@@ -194,6 +194,8 @@ class FragmentCuenta : Fragment(), View.OnClickListener {
                 if (result.resultCode == Activity.RESULT_OK) {
                     hayFoto = true
                     binding.fotoUsuario.setImageBitmap(result.data?.extras?.get("data") as Bitmap)
+
+                    editaUsuario()
                 }
             }
 
@@ -202,6 +204,8 @@ class FragmentCuenta : Fragment(), View.OnClickListener {
                 if (result.resultCode == Activity.RESULT_OK) {
                     hayFoto = true
                     binding.fotoUsuario.setImageURI(result.data?.data)
+
+                    editaUsuario()
                 }
             }
     }
@@ -313,43 +317,51 @@ class FragmentCuenta : Fragment(), View.OnClickListener {
     override fun onClick(p0: View?) {
         when (p0) {
             botonAceptar -> {
-                val nombre = binding.nombreBackText.text.toString()
-                val apellidos = binding.apellidosText.text.toString()
-                val userName = binding.userNameText.text.toString()
-                val email = binding.mailText.text.toString()
-                val telefono = binding.phoneText.text.toString()
-                val password = binding.passwordText.text.toString()
-
-                if (!binding.switchPassword.isChecked) {
-
-                    val usuario = Usuario()
-                    usuario.idUsuario = model.getUsuario.value?.idUsuario!!
-                    usuario.nombre = nombre
-                    usuario.apellidos = apellidos
-                    usuario.username = userName
-                    usuario.email = email
-                    usuario.telefono = telefono
-
-                    setFotoUsuario(usuario)
-
-                    modificaUsuario(usuario)
-
-                } else {
-
-                    val usuario = Usuario()
-                    usuario.idUsuario = model.getUsuario.value?.idUsuario!!
-                    usuario.nombre = nombre
-                    usuario.apellidos = apellidos
-                    usuario.username = userName
-                    usuario.email = email
-                    usuario.password = Hash.hash(password)
-                    usuario.telefono = telefono
-
-                    setFotoUsuario(usuario)
-
-                    modificaUsuarioPassword(usuario)
-                }
+                editaUsuario()
             }
+        }
+    }
+
+    /**
+     * Toma la información de los campos de datos del usuario y los modifica,
+     * incluyendo su foto
+     */
+    private fun editaUsuario() {
+        val nombre = binding.nombreBackText.text.toString()
+        val apellidos = binding.apellidosText.text.toString()
+        val userName = binding.userNameText.text.toString()
+        val email = binding.mailText.text.toString()
+        val telefono = binding.phoneText.text.toString()
+        val password = binding.passwordText.text.toString()
+
+        if (!binding.switchPassword.isChecked) {
+
+            val usuario = Usuario()
+            usuario.idUsuario = model.getUsuario.value?.idUsuario!!
+            usuario.nombre = nombre
+            usuario.apellidos = apellidos
+            usuario.username = userName
+            usuario.email = email
+            usuario.telefono = telefono
+
+            setFotoUsuario(usuario)
+
+            modificaUsuario(usuario)
+
+        } else {
+
+            val usuario = Usuario()
+            usuario.idUsuario = model.getUsuario.value?.idUsuario!!
+            usuario.nombre = nombre
+            usuario.apellidos = apellidos
+            usuario.username = userName
+            usuario.email = email
+            usuario.password = Hash.hash(password)
+            usuario.telefono = telefono
+
+            setFotoUsuario(usuario)
+
+            modificaUsuarioPassword(usuario)
         }
     }
 

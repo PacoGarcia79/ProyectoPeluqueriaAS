@@ -59,6 +59,8 @@ class DialogoLogin : DialogFragment(), View.OnClickListener {
 
         actividadPrincipal = (requireActivity() as MainActivity)
 
+        actividadPrincipal.disableDrawer()
+
         return dialog
     }
 

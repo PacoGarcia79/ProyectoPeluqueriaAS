@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Peluquería Paco</string>
+    <string name="app_name">Peluquería en un click</string>
     <string name="info_text">Necesitas tener creada una cuenta para iniciar la aplicación</string>
     <string name="crear_boton">CREAR CUENTA</string>
     <string name="nombre_input">Nombre</string>
@@ -18,7 +18,7 @@
     <string name="menu">Menú</string>
     <string name="navigation_close">close</string>
     <string name="navigation_open">open</string>
-    <string name="descripcion">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi laoreet, metus quis lacinia semper, orci justo porta lacus, sit amet vestibulum leo nibh id mauris. Mauris sed tristique ante. Quisque id metus tellus. Mauris quis augue viverra, hendrerit velit et, condimentum nunc. Etiam porta arcu at elit consequat, sit amet ullamcorper metus aliquam. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce vehicula molestie dui, vitae placerat nisl aliquet et. Nam a semper leo, nec elementum justo. Ut est arcu, suscipit vel erat a, egestas efficitur metus. Vivamus tristique imperdiet ultricies. Nam non lobortis nisi.</string>
+    <string name="descripcion">"Disfrutarás de la experiencia de belleza más completa, única y diseñada pensando siempre en ti.\n\nYa sea que te gustan los cortes modernos o clásicos, podemos asesorarte para que tu corte refleje el estilo y personalidad que quieres proyectar.\n\nEl trabajo es una manera de expresar y recibirás la atención más exquisita que podamos darte. Queremos hacer que te olvides de la rutina del día a día y se sientan absolutamente cómodos y atendidos durante el servicio."</string>
     <string name="reservas">Mis reservas</string>
     <string name="reservas_cliente">Próximas reservas</string>
     <string name="info_cuenta">Información de la cuenta</string>
@@ -76,4 +76,5 @@
     <string name="_10_00">10:00</string>
     <string name="unidades_en_stock">unidades en stock</string>
     <string name="cargando">Cargando...</string>
+    <string name="login">Login</string>
 </resources>

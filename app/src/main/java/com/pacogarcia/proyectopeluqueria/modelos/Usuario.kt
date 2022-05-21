@@ -173,7 +173,8 @@ class Usuario() : Parcelable {
         username: String,
         password: String,
         email: String,
-        telefono: String
+        telefono: String,
+        foto: String,
     ) : this() {
         this.nombre = nombre
         this.apellidos = apellidos
@@ -181,6 +182,7 @@ class Usuario() : Parcelable {
         this.password = password
         this.email = email
         this.telefono = telefono
+        this.foto = foto
     }
 
     constructor(

@@ -141,9 +141,22 @@ class MainActivity : AppCompatActivity(),
                 opcionOverflow = 2
                 abreDialogoConfirmacion()
             }
+            R.id.login -> {
+                navController.navigate(R.id.action_global_dialogoLogin)
+            }
             else -> super.onOptionsItemSelected(item)
         }
         return true
+    }
+
+
+    /**
+     * Deshabilita la función de login del menu overflow si el usuario está autorizado
+     */
+    override fun onPrepareOptionsMenu(menu: Menu?): Boolean {
+        val item: MenuItem = menu!!.findItem(R.id.login)
+        item.isVisible = !autorizado
+        return super.onPrepareOptionsMenu(menu)
     }
 
     override fun onBackPressed() {
