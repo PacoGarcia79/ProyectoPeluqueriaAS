@@ -1,5 +1,6 @@
 package com.pacogarcia.proyectopeluqueria
 
+import android.graphics.BitmapFactory
 import android.os.Build
 import android.os.Bundle
 import android.text.Editable
@@ -12,6 +13,7 @@ import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.NavHostFragment
 import com.jakewharton.rxbinding2.widget.RxTextView
 import com.pacogarcia.proyectopeluqueria.clasesestaticas.Hash
+import com.pacogarcia.proyectopeluqueria.clasesestaticas.ImagenUtilidad
 import com.pacogarcia.proyectopeluqueria.databinding.FragmentRegistrarBinding
 import com.pacogarcia.proyectopeluqueria.modelos.Usuario
 import io.reactivex.Observable
@@ -351,13 +353,22 @@ class FragmentRegistrar : Fragment(), View.OnClickListener {
                 val email = binding.mailText.text.toString()
                 val telefono = binding.phoneText.text.toString()
 
+                val foto =
+                    ImagenUtilidad.redimensionarImagenMaximo(BitmapFactory.decodeResource(
+                        resources,
+                        R.drawable.multiavatar
+                    ), 200f, 200f)
+
+                val fotoRed = ImagenUtilidad.convertirImagenString(foto)
+
                 val usuario = Usuario(
                     nombre,
                     apellidos,
                     userName,
                     Hash.hash(password),
                     email,
-                    telefono
+                    telefono,
+                    fotoRed
                 )
 
                 registraUsuario(usuario)
