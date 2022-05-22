@@ -77,4 +77,6 @@
     <string name="unidades_en_stock">unidades en stock</string>
     <string name="cargando">Cargando...</string>
     <string name="login">Login</string>
+    <string name="texto_recordar">¿Has olvidado tu nombre de usuario o contraseña? Introduce tu email y te enviaremos todo lo que necesitas para volver a Peluquería en un click.</string>
+    <string name="resetear_contrase_a">Resetear contraseña</string>
 </resources>

@@ -33,9 +33,15 @@ class DialogoConfirmacion : DialogFragment() {
                     DialogInterface.OnClickListener { dialog, id ->
                         listener.onDialogPositiveClick(this)
 
+                        val result = true
+
                         if(MainActivity.dialogoAbiertoDesdeReservas){
-                            val result = true
                             setFragmentResult("reservasKey", bundleOf("bundleReservas" to result))
+                            MainActivity.dialogoAbiertoDesdeReservas = false
+                        }
+                        if(MainActivity.dialogoAbiertoDesdeHorarios){
+                            setFragmentResult("horariosKey", bundleOf("bundleHorarios" to result))
+                            MainActivity.dialogoAbiertoDesdeHorarios = false
                         }
                     })
                 .setNegativeButton("CANCELAR") { dialog, id ->

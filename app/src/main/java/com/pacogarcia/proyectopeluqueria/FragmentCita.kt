@@ -107,6 +107,18 @@ class FragmentCita : Fragment(), View.OnClickListener, AdapterView.OnItemSelecte
          */
         binding.chipGroupHoraOpcionHora.setOnCheckedChangeListener { group, checkedId ->
             val chip: Chip? = group.findViewById(checkedId)
+
+            if (group.checkedChipIds.size == 0) {
+                binding.chipGroupProfesionalesOpcionHora.clearCheck()
+                binding.chipGroupProfesionalesOpcionHora.removeAllViews()
+                binding.bannerProfesionalOpcionHora.visibility = View.GONE
+                binding.chipGroupProfesionalesOpcionHora.visibility = View.GONE
+                binding.chipGroupServiciosOpcionHora.clearCheck()
+                binding.chipGroupServiciosOpcionHora.removeAllViews()
+                binding.bannerServicioOpcionHora.visibility = View.GONE
+                binding.chipGroupServiciosOpcionHora.visibility = View.GONE
+            }
+
             chip?.let { chipView ->
                 idHorarioSeleccionado = chip.id
 
@@ -115,12 +127,19 @@ class FragmentCita : Fragment(), View.OnClickListener, AdapterView.OnItemSelecte
             } ?: kotlin.run {
             }
         }
-
         /**
          * Controla los cambios en el grupo de chips con los profesionales, para la opción de cita por hora
          */
         binding.chipGroupProfesionalesOpcionHora.setOnCheckedChangeListener { group, checkedId ->
             val chip: Chip? = group.findViewById(checkedId)
+
+            if (group.checkedChipIds.size == 0) {
+                binding.chipGroupServiciosOpcionHora.clearCheck()
+                binding.chipGroupServiciosOpcionHora.removeAllViews()
+                binding.bannerServicioOpcionHora.visibility = View.GONE
+                binding.chipGroupServiciosOpcionHora.visibility = View.GONE
+            }
+
             chip?.let { chipView ->
                 idEmpleadoSeleccionado = chip.id
 
@@ -135,6 +154,18 @@ class FragmentCita : Fragment(), View.OnClickListener, AdapterView.OnItemSelecte
          */
         binding.chipGroupProfesionalesOpcionProfesional.setOnCheckedChangeListener { group, checkedId ->
             val chip: Chip? = group.findViewById(checkedId)
+
+            if (group.checkedChipIds.size == 0) {
+                binding.chipGroupServiciosOpcionProfesional.clearCheck()
+                binding.chipGroupServiciosOpcionProfesional.removeAllViews()
+                binding.bannerServicioOpcionProfesional.visibility = View.GONE
+                binding.chipGroupServiciosOpcionProfesional.visibility = View.GONE
+                binding.chipGroupHoraOpcionProfesional.clearCheck()
+                binding.chipGroupHoraOpcionProfesional.removeAllViews()
+                binding.bannerHoraOpcionProfesional.visibility = View.GONE
+                binding.chipGroupHoraOpcionProfesional.visibility = View.GONE
+            }
+
             chip?.let { chipView ->
                 idEmpleadoSeleccionado = chip.id
 
@@ -150,6 +181,11 @@ class FragmentCita : Fragment(), View.OnClickListener, AdapterView.OnItemSelecte
          */
         binding.chipGroupHoraOpcionProfesional.setOnCheckedChangeListener { group, checkedId ->
             val chip: Chip? = group.findViewById(checkedId)
+
+            if (group.checkedChipIds.size == 0) {
+                idHorarioSeleccionado = 0
+            }
+
             chip?.let { chipView ->
                 idHorarioSeleccionado = chip.id
 
@@ -176,6 +212,27 @@ class FragmentCita : Fragment(), View.OnClickListener, AdapterView.OnItemSelecte
         return sb.toString()
     }
 
+
+    fun checkData() {
+        if (model.rol != Roles.CLIENTE) {
+            if (idHorarioSeleccionado == 0 || idEmpleadoSeleccionado == 0 || idClienteSeleccionado == 0
+                || cadenaStringServicios.isEmpty()
+            ) {
+                Toast.makeText(activity, "Seleccione todos los datos necesarios", Toast.LENGTH_LONG)
+                    .show()
+            } else {
+                addCita()
+            }
+        } else {
+            if (idHorarioSeleccionado == 0 || idEmpleadoSeleccionado == 0 || cadenaStringServicios.isEmpty()) {
+                Toast.makeText(activity, "Seleccione todos los datos necesarios", Toast.LENGTH_LONG)
+                    .show()
+            } else {
+                addCita()
+            }
+        }
+    }
+
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onClick(p0: View?) {
         when (p0) {
@@ -190,7 +247,8 @@ class FragmentCita : Fragment(), View.OnClickListener, AdapterView.OnItemSelecte
                 }
 
                 cadenaStringServicios = obtieneListadoServicios(checkedChipIds)
-                addCita()
+
+                checkData()
 
             }
             //Selecciona las fechas no disponibles y muestra el calendario con un máximo de 60 días.
@@ -694,7 +752,7 @@ class FragmentCita : Fragment(), View.OnClickListener, AdapterView.OnItemSelecte
         }
     }
 
-    fun navegarInicio(){
+    fun navegarInicio() {
         val contextoFragment = this
         MainActivity.autorizado = false
         val navController = NavHostFragment.findNavController(contextoFragment)

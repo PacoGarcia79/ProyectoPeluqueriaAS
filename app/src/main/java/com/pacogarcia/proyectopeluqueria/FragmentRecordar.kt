@@ -49,7 +49,18 @@ class FragmentRecordar : Fragment(), View.OnClickListener {
     override fun onClick(p0: View?) {
         when (p0) {
             binding.resetBoton -> {
-                getUsernameFromEmail(binding.emailInput.text.toString())
+
+                if(!binding.emailInput.text.toString().equals("")){
+                    getUsernameFromEmail(binding.emailInput.text.toString())
+                }
+                else{
+                    Toast.makeText(
+                        activity,
+                        "Introduzca el email",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+
             }
         }
     }
@@ -117,7 +128,7 @@ class FragmentRecordar : Fragment(), View.OnClickListener {
                     val to = listOf(InternetAddress(email))
                     val from = InternetAddress("peluqueriaclick@outlook.es")
                     val email = EmailService.Email(auth, to, from, "Recordatorio usuario Peluquería en un click", "¡Hola!\nTu usuario es "
-                            + username + ", y tu nueva contraseña es " + randomPassword + " .\nYa puedes iniciar sesión de nuevo.")
+                            + username + ", y tu nueva contraseña es " + randomPassword + "\nYa puedes iniciar sesión de nuevo.")
                     val emailService = EmailService("smtp.office365.com", 587)
 
                     CoroutineScope(Dispatchers.Main).launch{

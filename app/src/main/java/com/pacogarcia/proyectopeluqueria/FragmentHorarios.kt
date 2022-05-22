@@ -7,6 +7,7 @@ import android.widget.*
 import androidx.annotation.RequiresApi
 import androidx.appcompat.view.ActionMode
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.setFragmentResultListener
 import androidx.navigation.fragment.NavHostFragment
 import androidx.recyclerview.selection.SelectionPredicates
 import androidx.recyclerview.selection.SelectionTracker
@@ -58,6 +59,11 @@ class FragmentHorarios : Fragment(), View.OnClickListener {
 
     var cadenaStringHorarios: String = ""
     var cadenaStringEmpleados: String = ""
+    var cadenaDialogoConfirmacion = ""
+    var listasString = ""
+    var lista: List<Long>? = null
+
+    var opcionHorario: OpcionesHorarios = OpcionesHorarios.DESHABILITA
 
     /**
      * Implementación de ActionMode.Callback, que permite que se puedan habilitar
@@ -80,12 +86,14 @@ class FragmentHorarios : Fragment(), View.OnClickListener {
                 Boolean {
             return when (item.itemId) {
                 R.id.deshabilita -> {
-                    val lista: List<Long> = tracker?.selection?.sorted()?.reversed()!!
+                    lista = tracker?.selection?.sorted()?.reversed()!!
 
-                    val listasString = obtieneListaStringDisponibilidad(lista)
+                    listasString = obtieneListaStringDisponibilidad(lista!!)
 
-                    habilitaDisponibilidadIds(listasString, lista)
-
+                    opcionHorario = OpcionesHorarios.HABILITA_POR_IDS
+                    var cantidadHorarios = if (lista!!.size > 1) "los horarios?" else "el horario?"
+                    cadenaDialogoConfirmacion = "¿Está seguro que quiere habilitar " + cantidadHorarios
+                    abreDialogoConfirmacion()
                     true
                 }
                 else -> false
@@ -130,6 +138,42 @@ class FragmentHorarios : Fragment(), View.OnClickListener {
         cargarHorarios()
 
         return binding.root
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        setFragmentResultListener("horariosKey") { requestKey, bundle ->
+            val result = bundle.getBoolean("bundleHorarios")
+            if (result) {
+
+                when(opcionHorario){
+                    OpcionesHorarios.HABILITA_POR_IDS -> {
+                        habilitaDisponibilidadIds()
+                    }
+                    OpcionesHorarios.DESHABILITA -> {
+                        deshabilitaDisponibilidad()
+                    }
+                    OpcionesHorarios.HABILITA -> {
+                        habilitaDisponibilidad()
+                    }
+                }
+
+            }
+        }
+    }
+
+    private fun abreDialogoConfirmacion() {
+
+        MainActivity.dialogoAbiertoDesdeHorarios = true
+        val contexto = this
+
+        val bundle = Bundle().apply {
+            putString("mensaje", cadenaDialogoConfirmacion)
+        }
+
+        val navController = NavHostFragment.findNavController(contexto)
+        navController.navigate(R.id.action_global_dialogoConfirmacion, bundle)
     }
 
 
@@ -347,7 +391,10 @@ class FragmentHorarios : Fragment(), View.OnClickListener {
                 ) {
                     muestraDialogo()
                 } else {
-                    habilitaDisponibilidad()
+                    opcionHorario = OpcionesHorarios.HABILITA
+                    var cantidadHorarios = if (cadenaStringHorarios.length > 1) "los horarios?" else "el horario?"
+                    cadenaDialogoConfirmacion = "¿Está seguro que quiere habilitar " + cantidadHorarios
+                    abreDialogoConfirmacion()
                 }
             }
             fabDeshabilita -> {
@@ -359,7 +406,10 @@ class FragmentHorarios : Fragment(), View.OnClickListener {
                 ) {
                     muestraDialogo()
                 } else {
-                    deshabilitaDisponibilidad()
+                    opcionHorario = OpcionesHorarios.DESHABILITA
+                    var cantidadHorarios = if (cadenaStringHorarios.length > 1) "los horarios?" else "el horario?"
+                    cadenaDialogoConfirmacion = "¿Está seguro que quiere deshabilitar " + cantidadHorarios
+                    abreDialogoConfirmacion()
                 }
             }
         }
@@ -505,21 +555,18 @@ class FragmentHorarios : Fragment(), View.OnClickListener {
     /**
      * Habilita los elementos seleccionados en el listado
      *
-     * @param disponibilidadListaString string con los ids de los elementos seleccionados
-     * @param lista lista de números de tipo long creada por el tracker y que va modificando conforme se seleccionan o deseleccionan
-     * elementos
      */
-    private fun habilitaDisponibilidadIds(disponibilidadListaString: String, lista: List<Long>) {
+    private fun habilitaDisponibilidadIds() {
         CoroutineScope(Dispatchers.Main).launch {
 
             try {
 
                 val resultado =
-                    ApiRestAdapter.putDelDisponibilidadIds(disponibilidadListaString).await()
+                    ApiRestAdapter.putDelDisponibilidadIds(listasString).await()
 
                 if (resultado.mensaje.equals("Registro/s actualizado/s")) {
 
-                    lista.forEach { id ->
+                    lista!!.forEach { id ->
                         listaNoDisponibilidad.removeAt(id.toInt())
                     }
                     recycler.recycledViewPool.clear()

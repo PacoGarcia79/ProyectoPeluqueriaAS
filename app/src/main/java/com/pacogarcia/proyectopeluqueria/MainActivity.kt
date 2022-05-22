@@ -243,6 +243,7 @@ class MainActivity : AppCompatActivity(),
         var autorizado: Boolean = false
         var clickAddProductoCitaHolder = false
         var dialogoAbiertoDesdeReservas = false
+        var dialogoAbiertoDesdeHorarios = false
         var rol: Roles? = null
     }
 

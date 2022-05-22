@@ -7,7 +7,9 @@ import javax.mail.internet.MimeBodyPart
 import javax.mail.internet.MimeMessage
 import javax.mail.internet.MimeMultipart
 
-
+/**
+ * Clase usada para el envío de emails sin intervención del usuario
+ */
 class EmailService(private val server: String, private val port: Int) {
 
     data class Email(
