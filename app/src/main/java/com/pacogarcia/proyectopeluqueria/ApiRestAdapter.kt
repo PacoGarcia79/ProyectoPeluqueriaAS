@@ -2,11 +2,15 @@ package com.pacogarcia.proyectopeluqueria
 
 import com.pacogarcia.proyectopeluqueria.interfaces.ProveedorServicios
 import com.pacogarcia.proyectopeluqueria.modelos.*
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
 import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.util.*
+
 
 /**
  * Clase que define los métodos necesarios para usar el servicio de API Rest
@@ -117,6 +121,58 @@ object ApiRestAdapter {
                 }
             }
 
+            resp
+        }
+    }
+
+    /**
+     * Este método se usa para obtener el nombre de usuario a partir de su email.
+     *
+     * @param email email del usuario.
+     * @return nombre de usuario.
+     */
+    fun getUsernameFromEmail(email: String): Deferred<Usuario> {
+        val proveedorServicios: ProveedorServicios = crearRetrofit()
+        return CoroutineScope(Dispatchers.IO).async {
+
+            val response: Response<Usuario>
+            var resp = Usuario()
+
+            response =
+                proveedorServicios.getUsernameFromEmail(email)
+
+            if (response.isSuccessful) {
+                val msgResponse = response.body()
+                if (msgResponse != null) {
+                    resp = msgResponse
+                }
+            }
+
+            resp
+        }
+    }
+
+    /**
+     * Este método se usa para modificar la contraseña de un usuario partiendo de su email.
+     *
+     * @param email
+     * @param password nueva contraseña
+     * @return Un objeto de tipo MensajeGeneral para evaluar el resultado de la petición
+     */
+    fun modificarPassword(email: String, password: String): Deferred<MensajeGeneral> {
+        val proveedorServicios: ProveedorServicios = crearRetrofit()
+        return CoroutineScope(Dispatchers.IO).async {
+
+            val response: Response<MensajeGeneral>
+            var resp = MensajeGeneral()
+            response = proveedorServicios.modificarPassword(email, password)
+
+            if (response.isSuccessful) {
+                val msgResponse = response.body()
+                if (msgResponse != null) {
+                    resp = msgResponse
+                }
+            }
             resp
         }
     }

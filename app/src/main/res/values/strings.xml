@@ -49,8 +49,8 @@
     <string name="anadir_a_cita">Añadir a cita</string>
     <string name="cancelar">CANCELAR</string>
     <string name="volver">Volver</string>
-    <string name="logout">Logout</string>
-    <string name="salir">Salir</string>
+    <string name="logout">Cerrar sesión</string>
+    <string name="salir">Salir de la aplicación</string>
     <string name="texto_prueba_nombre_producto">Aceite de limón</string>
     <string name="texto_prueba_nombre_empresa">de El barbero feliz</string>
     <string name="precio_prueba_producto">15€</string>

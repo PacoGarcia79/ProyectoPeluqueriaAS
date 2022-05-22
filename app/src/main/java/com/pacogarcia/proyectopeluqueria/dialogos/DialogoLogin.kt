@@ -2,6 +2,8 @@ package com.pacogarcia.proyectopeluqueria.dialogos
 
 import android.app.Dialog
 import android.os.Bundle
+import android.util.Log
+import android.view.KeyEvent
 import android.view.View
 import android.widget.Button
 import android.widget.TextView
@@ -22,6 +24,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.net.SocketTimeoutException
+import kotlin.system.exitProcess
 
 /**
  * Diálogo para el login o el registro.
@@ -31,6 +34,7 @@ class DialogoLogin : DialogFragment(), View.OnClickListener {
     private val model: ItemViewModel by activityViewModels()
     private lateinit var actividadPrincipal: MainActivity
     private lateinit var crear: TextView
+    private lateinit var recordar: TextView
     private lateinit var entrar: Button
     private lateinit var username: TextInputEditText
     private lateinit var password: TextInputEditText
@@ -48,6 +52,7 @@ class DialogoLogin : DialogFragment(), View.OnClickListener {
         dialog.setCanceledOnTouchOutside(false)
 
         crear = v.findViewById<View>(R.id.registrar_text) as TextView
+        recordar = v.findViewById<View>(R.id.recordar_text) as TextView
         entrar = v.findViewById<View>(R.id.iniciar_sesion_boton) as Button
         username = v.findViewById(R.id.nombre_input)
         password = v.findViewById(R.id.contra_input)
@@ -56,10 +61,21 @@ class DialogoLogin : DialogFragment(), View.OnClickListener {
 
         crear.setOnClickListener(this)
         entrar.setOnClickListener(this)
+        recordar.setOnClickListener(this)
 
         actividadPrincipal = (requireActivity() as MainActivity)
 
         actividadPrincipal.disableDrawer()
+
+        dialog.setOnKeyListener { dialog, keyCode, event ->
+            if (keyCode === KeyEvent.KEYCODE_BACK
+                && event.getAction() === KeyEvent.ACTION_UP
+            ) {
+                exitProcess(1)
+                //return@setOnKeyListener true
+            }
+            false
+        }
 
         return dialog
     }
@@ -88,6 +104,11 @@ class DialogoLogin : DialogFragment(), View.OnClickListener {
             crear -> {
                 val navController = NavHostFragment.findNavController(contextoFragment)
                 navController.navigate(R.id.action_dialogoLogin_to_fragmentRegistrar)
+                this.dismiss()
+            }
+            recordar ->{
+                val navController = NavHostFragment.findNavController(contextoFragment)
+                navController.navigate(R.id.action_dialogoLogin_to_fragmentRecordar)
                 this.dismiss()
             }
         }
@@ -152,6 +173,8 @@ class DialogoLogin : DialogFragment(), View.OnClickListener {
             model.setUsuario(job)
         }
     }
+
+
 
 
 }

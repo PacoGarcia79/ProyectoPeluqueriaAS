@@ -47,9 +47,7 @@ class FragmentListaProductosBusqueda : Fragment(), View.OnClickListener {
         super.onCreate(savedInstanceState)
 
         setFragmentResultListener("busquedaKey") { requestKey, bundle ->
-            // We use a String here, but any type that can be put in a Bundle is supported
             val result = bundle.getBoolean("bundleBusqueda")
-            // Do something with the result
             if (result) {
                 val producto =
                     model.getProductosPorBusqueda().value!!.get(model.posicionProductoBusqueda)

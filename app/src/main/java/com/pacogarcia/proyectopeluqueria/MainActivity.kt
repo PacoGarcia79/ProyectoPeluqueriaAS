@@ -141,41 +141,19 @@ class MainActivity : AppCompatActivity(),
                 opcionOverflow = 2
                 abreDialogoConfirmacion()
             }
-            R.id.login -> {
-                navController.navigate(R.id.action_global_dialogoLogin)
-            }
             else -> super.onOptionsItemSelected(item)
         }
         return true
     }
 
-
-    /**
-     * Deshabilita la función de login del menu overflow si el usuario está autorizado
-     */
-    override fun onPrepareOptionsMenu(menu: Menu?): Boolean {
-        val item: MenuItem = menu!!.findItem(R.id.login)
-        item.isVisible = !autorizado
-        return super.onPrepareOptionsMenu(menu)
-    }
-
     override fun onBackPressed() {
-        if (navController.currentDestination?.id == R.id.fragmentListaProductos) {
-            navController.navigate(R.id.action_global_fragmentProductos4)
-        } else if (navController.currentDestination?.id == R.id.fragmentTipoProducto) {
-            if (model.query.isEmpty()) {
-                navController.navigate(R.id.action_global_fragmentProductos4)
-            } else {
-                navController.navigate(R.id.action_global_fragmentListaProductos)
-            }
-        } else if (navController.currentDestination?.id == R.id.fragmentRegistrar) {
-            navController.navigate(R.id.action_global_fragmentInicio2)
-        } else {
+        if (navController.currentDestination?.id == R.id.fragmentInicio2 && autorizado) {
             cadena = "¿Está seguro que quiere cerrar la sesión?"
             opcionOverflow = 1
             abreDialogoConfirmacion()
+        } else {
+            navController.popBackStack()
         }
-
     }
 
     fun salir() {
@@ -264,6 +242,7 @@ class MainActivity : AppCompatActivity(),
         var productoGruposCargados = false
         var autorizado: Boolean = false
         var clickAddProductoCitaHolder = false
+        var dialogoAbiertoDesdeReservas = false
         var rol: Roles? = null
     }
 

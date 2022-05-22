@@ -5,7 +5,10 @@ import android.app.Dialog
 import android.content.Context
 import android.content.DialogInterface
 import android.os.Bundle
+import androidx.core.os.bundleOf
 import androidx.fragment.app.DialogFragment
+import androidx.fragment.app.setFragmentResult
+import com.pacogarcia.proyectopeluqueria.MainActivity
 
 /**
  * Diálogo usado para la confirmación del usuario. Si hay click positivo, envía el resultado para ejecutar la opción para la que
@@ -29,6 +32,11 @@ class DialogoConfirmacion : DialogFragment() {
                 .setPositiveButton("ACEPTAR",
                     DialogInterface.OnClickListener { dialog, id ->
                         listener.onDialogPositiveClick(this)
+
+                        if(MainActivity.dialogoAbiertoDesdeReservas){
+                            val result = true
+                            setFragmentResult("reservasKey", bundleOf("bundleReservas" to result))
+                        }
                     })
                 .setNegativeButton("CANCELAR") { dialog, id ->
                         dialog.dismiss()

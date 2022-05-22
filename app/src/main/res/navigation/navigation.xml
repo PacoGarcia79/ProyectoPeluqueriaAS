@@ -42,6 +42,9 @@
         <action
             android:id="@+id/action_dialogoLogin_to_fragmentRegistrar"
             app:destination="@id/fragmentRegistrar" />
+        <action
+            android:id="@+id/action_dialogoLogin_to_fragmentRecordar"
+            app:destination="@id/fragmentRecordar" />
     </dialog>
     <action android:id="@+id/action_global_fragmentInicio2" app:destination="@id/fragmentInicio2"/>
     <fragment
@@ -88,4 +91,12 @@
             android:id="@+id/action_fragmentRegistrar_to_fragmentInicio2"
             app:destination="@id/fragmentInicio2" />
     </fragment><action android:id="@+id/action_global_dialogoLogin" app:destination="@id/dialogoLogin"/>
+    <fragment
+        android:id="@+id/fragmentRecordar"
+        android:name="com.pacogarcia.proyectopeluqueria.FragmentRecordar"
+        android:label="FragmentRecordar" >
+        <action
+            android:id="@+id/action_fragmentRecordar_to_fragmentInicio2"
+            app:destination="@id/fragmentInicio2" />
+    </fragment>
 </navigation>

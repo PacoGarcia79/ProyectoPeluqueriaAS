@@ -6,7 +6,7 @@
     android:layout_height="match_parent">
 
     <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/card_back"
+        android:id="@+id/registrarCard"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal">
@@ -25,6 +25,21 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
+        <com.google.android.material.imageview.ShapeableImageView
+            android:id="@+id/fotoUsuario"
+            android:layout_width="150dp"
+            android:layout_height="130dp"
+            android:layout_marginTop="5dp"
+            android:adjustViewBounds="true"
+            android:scaleType="fitXY"
+            android:src="@drawable/multiavatar"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/banner"
+            app:shapeAppearanceOverlay="@style/roundedImageViewRounded"
+            app:strokeColor="@color/white"
+            app:strokeWidth="1dp" />
+
         <TextView
             android:id="@+id/textblockNombre"
             android:layout_width="wrap_content"
@@ -36,7 +51,7 @@
             android:textColor="@color/darkgrey"
             android:textSize="12sp"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/banner" />
+            app:layout_constraintTop_toBottomOf="@+id/fotoUsuario" />
 
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/textInputNombre"

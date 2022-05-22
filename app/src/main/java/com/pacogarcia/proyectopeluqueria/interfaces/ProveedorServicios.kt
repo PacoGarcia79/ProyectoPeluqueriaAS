@@ -241,6 +241,32 @@ interface ProveedorServicios {
     ): Response<Usuario>
 
     /**
+     * Este método se usa para obtener el nombre de usuario a partir de su email.
+     *
+     * @param email email del usuario.
+     * @return nombre de usuario.
+     */
+    @GET("api/peluqueria/usuarios/username/{email}")
+    @Headers("Accept: application/json", "Content-Type: application/json")
+    suspend fun getUsernameFromEmail(
+        @Path("email") email: String
+    ): Response<Usuario>
+
+    /**
+     * Este método se usa para modificar la contraseña de un usuario partiendo de su email.
+     *
+     * @param email
+     * @param password nueva contraseña
+     * @return Un objeto de tipo MensajeGeneral para evaluar el resultado de la petición
+     */
+    @PUT("api/peluqueria/usuarios/email/password/{email}/{password}")
+    @Headers("Accept: application/json", "Content-Type: application/json")
+    suspend fun modificarPassword(
+        @Path("email") email: String,
+        @Path("password") password: String
+    ): Response<MensajeGeneral>
+
+    /**
      * Este método se usa para modificar los datos de un usuario.
      *
      * @param usuario usuario a modificar.

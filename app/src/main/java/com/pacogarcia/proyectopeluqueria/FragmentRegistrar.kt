@@ -1,13 +1,22 @@
 package com.pacogarcia.proyectopeluqueria
 
+import android.Manifest
+import android.app.Activity
+import android.content.Intent
+import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.drawable.BitmapDrawable
 import android.os.Build
 import android.os.Bundle
+import android.provider.MediaStore
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.Patterns
 import android.view.*
+import android.widget.PopupMenu
 import android.widget.Toast
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.NavHostFragment
@@ -35,6 +44,13 @@ class FragmentRegistrar : Fragment(), View.OnClickListener {
     private lateinit var actividadPrincipal: MainActivity
     private lateinit var binding: FragmentRegistrarBinding
 
+    private lateinit var registerPermisosCamera: ActivityResultLauncher<String>
+    private lateinit var registerPermisosGaleria: ActivityResultLauncher<String>
+    private lateinit var resultadoCamara: ActivityResultLauncher<Intent>
+    private lateinit var resultadoGaleria: ActivityResultLauncher<Intent>
+
+    var hayFoto = false
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -44,6 +60,13 @@ class FragmentRegistrar : Fragment(), View.OnClickListener {
         binding = FragmentRegistrarBinding.inflate(inflater, container, false)
 
         actividadPrincipal = (requireActivity() as MainActivity)
+
+        creaContratos()
+
+        binding.fotoUsuario.setOnClickListener {
+            showPopup(binding.fotoUsuario)
+            true
+        }
 
         /**
          * Deshabilita el menú drawer para que no sea accesible desde este fragmento
@@ -99,6 +122,44 @@ class FragmentRegistrar : Fragment(), View.OnClickListener {
         binding.passwordText.addTextChangedListener(textWatcher)
 
         return binding.root
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        registerPermisosCamera =
+            registerForActivityResult(ActivityResultContracts.RequestPermission()) {
+                if (it == true) {
+                    tomarFoto()
+                }
+            }
+        registerPermisosGaleria =
+            registerForActivityResult(ActivityResultContracts.RequestPermission()) {
+                if (it == true) {
+                    tomarGaleria()
+                }
+            }
+    }
+
+    private fun showPopup(view: View) {
+        val popup = PopupMenu(requireContext(), view)
+        popup.inflate(R.menu.menu_popup)
+        popup.setOnMenuItemClickListener(
+            PopupMenu.OnMenuItemClickListener
+            { item: MenuItem? ->
+                when (item!!.itemId) {
+                    R.id.opHacerFoto -> {
+                        registerPermisosCamera.launch(Manifest.permission.CAMERA)
+                    }
+                    R.id.opAbrirGaleria -> {
+                        registerPermisosGaleria.launch(Manifest.permission.READ_EXTERNAL_STORAGE)
+                    }
+                    R.id.opCancelar -> {
+                        popup.dismiss()
+                    }
+                }
+                true
+            })
+        popup.show()
     }
 
     /**
@@ -346,30 +407,15 @@ class FragmentRegistrar : Fragment(), View.OnClickListener {
         when (p0) {
             binding.registrar -> {
 
-                val nombre = binding.nombreText.text.toString()
-                val apellidos = binding.apellidosText.text.toString()
-                val userName = binding.userNameText.text.toString()
-                val password = binding.passwordText.text.toString()
-                val email = binding.mailText.text.toString()
-                val telefono = binding.phoneText.text.toString()
+                val usuario = Usuario()
+                usuario.nombre = binding.nombreText.text.toString()
+                usuario.apellidos = binding.apellidosText.text.toString()
+                usuario.username = binding.userNameText.text.toString()
+                usuario.password = Hash.hash(binding.passwordText.text.toString())
+                usuario.email = binding.mailText.text.toString()
+                usuario.telefono = binding.phoneText.text.toString()
 
-                val foto =
-                    ImagenUtilidad.redimensionarImagenMaximo(BitmapFactory.decodeResource(
-                        resources,
-                        R.drawable.multiavatar
-                    ), 200f, 200f)
-
-                val fotoRed = ImagenUtilidad.convertirImagenString(foto)
-
-                val usuario = Usuario(
-                    nombre,
-                    apellidos,
-                    userName,
-                    Hash.hash(password),
-                    email,
-                    telefono,
-                    fotoRed
-                )
+                setFotoUsuario(usuario)
 
                 registraUsuario(usuario)
             }
@@ -377,6 +423,22 @@ class FragmentRegistrar : Fragment(), View.OnClickListener {
                 val navController = NavHostFragment.findNavController(this)
                 navController.navigate(R.id.action_fragmentRegistrar_to_fragmentInicio2)
             }
+        }
+    }
+
+    private fun setFotoUsuario(usuario: Usuario) {
+        val foto = binding.fotoUsuario.drawable?.let { it as BitmapDrawable }
+        if (foto != null) {
+            val fotoRed =
+                ImagenUtilidad.redimensionarImagenMaximo(foto.bitmap!!, 200f, 200f)
+            usuario.foto = ImagenUtilidad.convertirImagenString(fotoRed)
+        } else {
+            usuario.foto = ImagenUtilidad.convertirImagenString(
+                BitmapFactory.decodeResource(
+                    resources,
+                    R.drawable.avatar
+                )
+            )
         }
     }
 
@@ -425,5 +487,44 @@ class FragmentRegistrar : Fragment(), View.OnClickListener {
                     .show()
             }
         }
+    }
+
+    /**
+     * Lanza el intent para tomar la foto
+     */
+    fun tomarFoto() {
+        val cameraIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
+        resultadoCamara.launch(cameraIntent)
+    }
+
+    /**
+     * Lanza el intent para seleccionar una foto de la galería
+     */
+    fun tomarGaleria() {
+        val cameraIntent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.INTERNAL_CONTENT_URI)
+        resultadoGaleria.launch(cameraIntent)
+    }
+
+    /**
+     * Registra las actividades para esperar resultados de otras activitys o fragments.
+     * Se debe registrar la actividad para posibles resultados en el método onCreate().
+     */
+    fun creaContratos() {
+
+        resultadoCamara =
+            registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+                if (result.resultCode == Activity.RESULT_OK) {
+                    hayFoto = true
+                    binding.fotoUsuario.setImageBitmap(result.data?.extras?.get("data") as Bitmap)
+                }
+            }
+
+        resultadoGaleria =
+            registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+                if (result.resultCode == Activity.RESULT_OK) {
+                    hayFoto = true
+                    binding.fotoUsuario.setImageURI(result.data?.data)
+                }
+            }
     }
 }

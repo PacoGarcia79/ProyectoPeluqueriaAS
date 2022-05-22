@@ -71,7 +71,7 @@ class DialogoAddProductoCita : DialogFragment(), View.OnClickListener,
         val idUsuario = model.getUsuario.value?.idUsuario!!
         cargaCitas(
             FechasHorasUtilidad.formatLocalDateTimeParaMySQL(LocalDateTime.now()),
-            FechasHorasUtilidad.formatLocalDateTimeParaMySQL(LocalDateTime.now().plusDays(15)),
+            FechasHorasUtilidad.formatLocalDateTimeParaMySQL(LocalDateTime.now().plusDays(60)),
             idUsuario
         )
 

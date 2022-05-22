@@ -380,11 +380,11 @@
             <com.google.android.material.imageview.ShapeableImageView
                 android:id="@+id/fotoUsuario"
                 android:layout_width="250dp"
-                android:layout_height="250dp"
+                android:layout_height="240dp"
                 android:layout_marginTop="70dp"
                 android:adjustViewBounds="true"
                 android:scaleType="fitXY"
-                android:src="@drawable/peluqueria"
+                android:src="@drawable/multiavatar"
                 app:layout_constraintLeft_toLeftOf="parent"
                 app:layout_constraintRight_toRightOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
