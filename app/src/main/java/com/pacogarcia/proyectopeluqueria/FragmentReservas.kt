@@ -35,6 +35,7 @@ import kotlinx.coroutines.launch
 import java.net.SocketTimeoutException
 import java.time.LocalDateTime
 import java.time.ZoneOffset
+import kotlin.math.absoluteValue
 
 /**
  * Fragmento para la gestión de las reservas
@@ -194,8 +195,8 @@ class FragmentReservas : Fragment(), View.OnClickListener {
         val sb = StringBuilder()
         val listaIdCitas: ArrayList<Int> = ArrayList()
 
-        for (i in lista.indices) {
-            listaIdCitas.add(citas[i].idCita!!)
+        lista.forEach {
+            listaIdCitas.add(citas.get(it.absoluteValue.toInt()).idCita!!)
         }
 
         for (i in listaIdCitas.indices) {
